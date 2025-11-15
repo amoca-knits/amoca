@@ -279,6 +279,67 @@
       font-size: 0.78rem;
       background: #fff;
     }
+
+/* ▼▼ スマホ最適化（幅600px以下）▼▼ */
+@media (max-width: 600px) {
+
+  body {
+    padding: 12px;
+  }
+
+  .app {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  .subtitle {
+    font-size: 0.78rem;
+  }
+
+  .entry-card {
+    padding: 10px;
+  }
+
+  .entry-photo {
+    max-width: 100%;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .form-grid input,
+  .form-grid textarea,
+  .form-grid select {
+    font-size: 0.9rem;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .form-card {
+    padding: 12px;
+  }
+}
+
+
   </style>
 </head>
 <body>
