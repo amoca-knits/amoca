@@ -574,7 +574,58 @@
       font-size: 0.72rem;
       color: var(--text-muted);
     }
-  </style>
+/* === ログイン後画面 === */
+
+.app-card {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px 20px 26px;
+  box-shadow:
+    0 18px 45px rgba(122, 87, 178, 0.15),
+    0 0 0 1px rgba(180, 140, 227, 0.08);
+}
+
+.app-header-loggedin {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(180, 140, 227, 0.3);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.app-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #b48ce3;
+}
+
+.app-subtitle {
+  font-size: 0.85rem;
+  color: #777;
+  margin-top: 2px;
+}
+
+#userDisplayName {
+  font-weight: 600;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
+  gap: 16px;
+}
+
+@media (max-width: 780px) {
+  .app-card {
+    padding: 16px 14px 22px;
+  }
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+}  </style>
 </head>
 <body>
   <div class="app">
@@ -630,15 +681,22 @@
         </div>
       </section>
 
-      <!-- ログイン後のナビ -->
-      <section id="appView" class="hidden">
-        <div class="section-header-row">
-          <div class="nav-tabs">
-            <button class="nav-tab nav-tab-active" data-view="mypage">マイページ</button>
-            <button class="nav-tab" data-view="search">検索</button>
-          </div>
-          <button id="logoutBtn" class="btn btn-outline btn-small">ログアウト</button>
+      <!-- ▼ ログイン後のメイン画面 ▼ -->
+<section id="appView" style="display:none; padding:24px 0 40px;">
+  <div class="app-card">
+
+    <!-- 上部バー：ユーザー情報 ＋ ログアウト -->
+    <header class="app-header-loggedin">
+      <div>
+        <div class="app-title">Amoca knit note</div>
+        <div class="app-subtitle">
+          <span id="userDisplayName">ログイン中のユーザー</span> さんの編み物ノート
         </div>
+      </div>
+      <button id="signOutBtn" class="btn btn-outline">
+        ログアウト
+      </button>
+    </header>
 
         <!-- マイページビュー -->
         <div id="myPageView">
@@ -690,66 +748,96 @@
             </div>
           </section>
 
-          <!-- 作品フォーム + ギャラリー -->
-          <section class="two-column">
-            <!-- 左：作品追加 -->
-            <section class="card">
-              <h2>作品を追加</h2>
-              <div class="form-grid">
-                <label>編んだもの（アイテム名）：
-                  <input id="itemTypeInput" type="text" placeholder="ビーニー、マフラー など" />
-                </label>
-                <label>毛糸名：
-                  <input id="yarnNameInput" type="text" placeholder="メーカー・商品名" />
-                </label>
-                <div class="field-row">
-                  <label>使った玉数：
-                    <input id="ballsUsedInput" type="number" step="0.5" />
-                  </label>
-                  <label>針サイズ：
-                    <input id="needleSizeInput" type="text" placeholder="8号、10mm など" />
-                  </label>
-                </div>
-                <div class="field-row">
-                  <label>編み始め：
-                    <input id="startDateInput" type="date" />
-                  </label>
-                  <label>編み終え：
-                    <input id="endDateInput" type="date" />
-                  </label>
-                </div>
-                <label>写真：
-                  <input id="photoInput" type="file" accept="image/*" />
-                </label>
-                <label>メモ：
-                  <textarea id="memoInput" placeholder="編んでみた感想、サイズ、注意点など"></textarea>
-                </label>
-                <div class="form-actions">
-                  <button id="saveRecordBtn" class="btn btn-primary">作品を保存</button>
-                </div>
-              </div>
-            </section>
+          <!-- 作品フォーム ＋ 一覧 -->
+    <main class="app-layout">
+      <!-- 左：作品の記録フォーム -->
+      <section class="card form-card">
+        <h2>新しい記録</h2>
+        <div class="form-grid">
+          <label>毛糸の名前：
+            <input id="yarnName" type="text">
+          </label>
 
-            <!-- 右：作品ギャラリー -->
-            <section class="card">
-              <div class="section-header-row">
-                <h2>作品ギャラリー</h2>
-                <div class="filter-row">
-                  <span>アイテム：</span>
-                  <select id="itemFilterSelect">
-                    <option value="ALL">すべて</option>
-                  </select>
-                </div>
-              </div>
-              <div id="recordsGallery" class="gallery-grid">
-                <!-- JSで埋める -->
-              </div>
-              <div id="recordsEmpty" class="empty-state hidden">
-                まだ作品がありません。左のフォームから最初の作品を追加してみてね🧶
-              </div>
-            </section>
-          </section>
+          <label>色番：
+            <input id="colorNumber" type="text">
+          </label>
 
+          <label>編んだもの：
+            <input id="itemType" type="text" placeholder="例：ビーニー、マフラー">
+          </label>
+
+          <div class="field-group-inline">
+            <label>使った玉数：
+              <input id="ballsUsed" type="number" step="0.5">
+            </label>
+            <label>針サイズ：
+              <input id="needleSize" type="text" placeholder="例：8号かぎ針">
+            </label>
+          </div>
+
+          <label>購入先：
+            <input id="purchasePlace" type="text" placeholder="例：ユザワヤ オンライン">
+          </label>
+
+          <label>作業時間（時間）：
+            <input id="workHours" type="number" step="0.1">
+          </label>
+
+          <div class="field-group-inline">
+            <label>編み始めた日：
+              <input id="startDate" type="date">
+            </label>
+            <label>編み終えた日：
+              <input id="endDate" type="date">
+            </label>
+          </div>
+
+          <label>写真：
+            <input id="photo" type="file" accept="image/*">
+          </label>
+
+          <label>メモ：
+            <textarea id="memo" placeholder="ゲージ・反省点・次やるときのメモなど"></textarea>
+          </label>
+
+          <div class="form-actions">
+            <button id="saveButton" class="btn btn-primary">記録を保存</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右：記録一覧 -->
+      <section class="card list-card">
+        <h2>記録一覧</h2>
+
+        <div class="filter-bar">
+          <div class="filter-field">
+            <label>
+              毛糸で絞り込み：
+              <select id="yarnFilter" class="filter-select">
+                <option value="ALL">すべて</option>
+              </select>
+            </label>
+          </div>
+          <div class="filter-field">
+            <label>
+              作品で絞り込み：
+              <select id="itemFilter" class="filter-select">
+                <option value="ALL">すべて</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div id="listArea" class="list-area">
+          <div class="empty-state">
+            まだ記録がありません。左のフォームから最初の作品を追加してみてね🧶
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</section>
           <!-- 毛糸一覧 -->
           <section class="card">
             <div class="section-header-row">

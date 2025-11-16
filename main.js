@@ -35,7 +35,13 @@ const googleProvider = new GoogleAuthProvider();
 // =============================
 //  3. 画面の要素を取得
 // =============================
+// 画面ビュー
+const authView = document.getElementById("authView"); // ログインフォーム側
+const appView = document.getElementById("appView");   // ログイン後の画面
 
+// ヘッダーのユーザー名表示・ログアウト
+const userDisplayNameEl = document.getElementById("userDisplayName");
+const signOutBtn = document.getElementById("signOutBtn");
 const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
 
@@ -71,15 +77,31 @@ const itemFilterSelect = document.getElementById("itemFilter");
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    const msg = `ログイン中：${user.email || "Google アカウント"}`;
-    console.log(msg);
-    if (loginStatusEl) loginStatusEl.textContent = msg;
+    // ログイン中
+    const name = user.displayName || user.email || "ゲスト";
+    console.log("ログイン中：", name);
+
+    if (loginStatusEl) {
+      loginStatusEl.textContent = `ログイン中：${name}`;
+    }
+    if (userDisplayNameEl) {
+      userDisplayNameEl.textContent = name;
+    }
+
+    // 画面切り替え
+    if (authView) authView.style.display = "none";
+    if (appView) appView.style.display = "block";
   } else {
+    // ログアウト状態
     console.log("ログアウト状態です");
-    if (loginStatusEl) loginStatusEl.textContent = "ログインしていません";
+    if (loginStatusEl) {
+      loginStatusEl.textContent = "ログインしていません";
+    }
+
+    if (authView) authView.style.display = "block";
+    if (appView) appView.style.display = "none";
   }
 });
-
 // =============================
 //  5. 認証ボタンのイベント
 // =============================
@@ -363,6 +385,13 @@ function resetForm() {
 // =============================
 
 function init() {
+      // ログアウトボタン
+  if (signOutBtn) {
+    signOutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      handleSignOut();
+    });
+  }
   loadRecords();
   renderRecords();
 
