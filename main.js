@@ -105,47 +105,7 @@ function getEmailAndPassword() {
   return { email, password };
 }
 
-// メールで新規登録
-if (emailSignUpBtn) {
-  emailSignUpBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const info = getEmailAndPassword();
-    if (!info) return;
 
-    try {
-      const cred = await createUserWithEmailAndPassword(
-        auth,
-        info.email,
-        info.password
-      );
-      alert(`登録完了！\n${cred.user.email} でログインしました`);
-    } catch (err) {
-      console.error(err);
-      alert("新規登録に失敗しました：\n" + (err.message || err.code));
-    }
-  });
-}
-
-// メールでログイン
-if (emailSignInBtn) {
-  emailSignInBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const info = getEmailAndPassword();
-    if (!info) return;
-
-    try {
-      const cred = await signInWithEmailAndPassword(
-        auth,
-        info.email,
-        info.password
-      );
-      alert(`ログイン完了！\n${cred.user.email}`);
-    } catch (err) {
-      console.error(err);
-      alert("ログインに失敗しました：\n" + (err.message || err.code));
-    }
-  });
-}
 
 // Google でログイン
 if (googleSignInBtn) {
@@ -160,7 +120,52 @@ if (googleSignInBtn) {
     }
   });
 }
+// ===============================
+// Email / Password ログイン
+// ===============================
+emailSignInBtn.addEventListener("click", async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
 
+  if (!email || !password) {
+    alert("メールアドレスとパスワードを入力してね🧶");
+    return;
+  }
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    alert("ログイン成功！ユーザーID：" + user.uid);
+
+    // TODO: ここで画面遷移（後で作る）
+  } catch (error) {
+    alert("ログインエラー：" + error.message);
+  }
+});
+
+// ===============================
+// Email 新規登録
+// ===============================
+emailSignUpBtn.addEventListener("click", async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!email || !password) {
+    alert("メールアドレスとパスワードを入力してね🧶");
+    return;
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    alert("新規登録成功！ユーザーID：" + user.uid);
+    
+  } catch (error) {
+    alert("新規登録エラー：" + error.message);
+  }
+});
 // （必要になったらログアウトボタンも繋げられるように関数だけ用意）
 async function handleSignOut() {
   try {
