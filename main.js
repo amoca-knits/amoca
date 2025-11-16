@@ -91,17 +91,21 @@ onAuthStateChanged(auth, (user) => {
     // 画面切り替え
     if (authView) authView.style.display = "none";
     if (appView) appView.style.display = "block";
+    loadProfile(user.uid, user);
+
   } else {
-    // ログアウト状態
     console.log("ログアウト状態です");
     if (loginStatusEl) {
       loginStatusEl.textContent = "ログインしていません";
     }
+    if (ownerNameEl) ownerNameEl.textContent = "ゲスト";
+  }
+});
+  
 
     if (authView) authView.style.display = "block";
     if (appView) appView.style.display = "none";
-  }
-});
+
 // =============================
 //  5. 認証ボタンのイベント
 // =============================
@@ -198,12 +202,147 @@ async function handleSignOut() {
     alert("ログアウトに失敗しました：\n" + (err.message || err.code));
   }
 }
+// =============================
+//  プロフィール（ローカル保存）
+// =============================
+function profileKey(uid) {
+  return `amocaProfile_${uid}`;
+}
+
+function applyOwnerName(profile, user) {
+  const fallback =
+    user?.displayName ||
+    (user?.email ? user.email.split("@")[0] : "あなた");
+
+  if (ownerNameEl) {
+    ownerNameEl.textContent = profile?.name || fallback;
+  }
+}
+
+function loadProfile(uid, user) {
+  if (!uid) return;
+  try {
+    const raw = localStorage.getItem(profileKey(uid));
+    const profile = raw ? JSON.parse(raw) : {};
+
+    if (profileNameInput) profileNameInput.value = profile.name || "";
+    if (profileBioInput) profileBioInput.value = profile.bio || "";
+
+    if (link1TitleInput) link1TitleInput.value = profile.link1Title || "";
+    if (link1UrlInput) link1UrlInput.value = profile.link1Url || "";
+    if (link2TitleInput) link2TitleInput.value = profile.link2Title || "";
+    if (link2UrlInput) link2UrlInput.value = profile.link2Url || "";
+    if (link3TitleInput) link3TitleInput.value = profile.link3Title || "";
+    if (link3UrlInput) link3UrlInput.value = profile.link3Url || "";
+
+    applyOwnerName(profile, user);
+  } catch (e) {
+    console.error("loadProfile error", e);
+    applyOwnerName(null, user);
+  }
+}
+// =============================
+//  プロフィール（ローカル保存）
+// =============================
+function profileKey(uid) {
+  return `amocaProfile_${uid}`;
+}
+
+function applyOwnerName(profile, user) {
+  const fallback =
+    user?.displayName ||
+    (user?.email ? user.email.split("@")[0] : "あなた");
+
+  if (ownerNameEl) {
+    ownerNameEl.textContent = profile?.name || fallback;
+  }
+}
+
+function loadProfile(uid, user) {
+  if (!uid) return;
+  try {
+    const raw = localStorage.getItem(profileKey(uid));
+    const profile = raw ? JSON.parse(raw) : {};
+
+    if (profileNameInput) profileNameInput.value = profile.name || "";
+    if (profileBioInput) profileBioInput.value = profile.bio || "";
+
+    if (link1TitleInput) link1TitleInput.value = profile.link1Title || "";
+    if (link1UrlInput) link1UrlInput.value = profile.link1Url || "";
+    if (link2TitleInput) link2TitleInput.value = profile.link2Title || "";
+    if (link2UrlInput) link2UrlInput.value = profile.link2Url || "";
+    if (link3TitleInput) link3TitleInput.value = profile.link3Title || "";
+    if (link3UrlInput) link3UrlInput.value = profile.link3Url || "";
+
+    applyOwnerName(profile, user);
+  } catch (e) {
+    console.error("loadProfile error", e);
+    applyOwnerName(null, user);
+  }
+}
+// --- プロフィール関連 ---
+const ownerNameEl = document.getElementById("ownerName");
+const profileNameInput = document.getElementById("profileName");
+const profileBioInput = document.getElementById("profileBio");
+const link1TitleInput = document.getElementById("link1Title");
+const link1UrlInput = document.getElementById("link1Url");
+const link2TitleInput = document.getElementById("link2Title");
+const link2UrlInput = document.getElementById("link2Url");
+const link3TitleInput = document.getElementById("link3Title");
+const link3UrlInput = document.getElementById("link3Url");
+const profileSaveBtn = document.getEleme
+
+function saveProfile(uid, user) {
+  if (!uid) return;
+
+  const profile = {
+    name: profileNameInput?.value.trim() || "",
+    bio: profileBioInput?.value.trim() || "",
+    link1Title: link1TitleInput?.value.trim() || "",
+    link1Url: link1UrlInput?.value.trim() || "",
+    link2Title: link2TitleInput?.value.trim() || "",
+    link2Url: link2UrlInput?.value.trim() || "",
+    link3Title: link3TitleInput?.value.trim() || "",
+    link3Url: link3UrlInput?.value.trim() || ""
+  };
+
+  try {
+    localStorage.setItem(profileKey(uid), JSON.stringify(profile));
+    applyOwnerName(profile, user);
+    alert("プロフィールを保存しました🧶");
+  } catch (e) {
+    console.error("saveProfile error", e);
+    alert("プロフィールの保存に失敗しちゃいました…");
+  }
 
 // =============================
 //  6. 編み物ノート（ローカル保存）
 // =============================
 
 let records = [];
+let editingRecordId = null; // いま編集中の記録の id（なければ null）
+    // ---- ここから追加：編集・削除ボタン ----
+    const actions = document.createElement("div");
+    actions.className = "entry-actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "編集";
+    editBtn.className = "btn btn-sm";
+    editBtn.addEventListener("click", () => {
+      startEditRecord(rec.id);
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "削除";
+    deleteBtn.className = "btn btn-sm btn-outline";
+    deleteBtn.addEventListener("click", () => {
+      deleteRecord(rec.id);
+    });
+
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+    card.appendChild(actions);
+    // ---- 追加ここまで ----
 
 // ローカルストレージから読み込み
 function loadRecords() {
@@ -313,6 +452,41 @@ function updateFilterOptions() {
 
 // 新しい記録を追加
 function handleSaveRecord() {
+    // 記録の編集を開始（フォームに値を入れる）
+function startEditRecord(id) {
+  const target = records.find((r) => r.id === id);
+  if (!target) return;
+
+  editingRecordId = id;
+
+  if (yarnNameInput) yarnNameInput.value = target.yarnName || "";
+  if (colorNumberInput) colorNumberInput.value = target.colorNumber || "";
+  if (itemTypeInput) itemTypeInput.value = target.itemType || "";
+  if (ballsUsedInput) ballsUsedInput.value = target.ballsUsed || "";
+  if (needleSizeInput) needleSizeInput.value = target.needleSize || "";
+  if (purchasePlaceInput) purchasePlaceInput.value = target.purchasePlace || "";
+  if (workHoursInput) workHoursInput.value = target.workHours || "";
+  if (startDateInput) startDateInput.value = target.startDate || "";
+  if (endDateInput) endDateInput.value = target.endDate || "";
+  if (memoInput) memoInput.value = target.memo || "";
+
+  // 一番上のフォームまでスクロール（お好みで）
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// 記録の削除
+function deleteRecord(id) {
+  if (!confirm("この記録を削除してもいい？")) return;
+
+  records = records.filter((r) => r.id !== id);
+  saveRecords();
+  renderRecords();
+
+  if (editingRecordId === id) {
+    editingRecordId = null;
+    resetForm();
+  }
+}
   if (!yarnNameInput || !itemTypeInput || !ballsUsedInput) return;
 
   const yarnName = yarnNameInput.value.trim();
@@ -385,6 +559,17 @@ function resetForm() {
 // =============================
 
 function init() {
+    if (profileSaveBtn) {
+  profileSaveBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) {
+      alert("ログインしてからプロフィールを保存してね🧶");
+      return;
+    }
+    saveProfile(user.uid, user);
+  });
+}
       // ログアウトボタン
   if (signOutBtn) {
     signOutBtn.addEventListener("click", (e) => {

@@ -574,6 +574,55 @@
       font-size: 0.72rem;
       color: var(--text-muted);
     }
+    /* ================================
+   記録カード：写真サイズ調整
+================================ */
+.entry-photo {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* カード本体の横幅をスマホで見やすく */
+.entry-card {
+  max-width: 640px;
+  margin: 16px auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+/* ================================
+   編集・削除ボタン
+================================ */
+.entry-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn.btn-sm {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+/* 削除ボタン（アウトライン） */
+.btn.btn-outline {
+  border: 1px solid #aaa;
+  background: transparent;
+}
+
+/* 編集ボタン（紫） */
+.btn.btn-sm {
+  background: #cda7ff;
+  color: #fff;
+}
 /* === ログイン後画面 === */
 
 .app-card {
