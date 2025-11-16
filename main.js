@@ -97,14 +97,22 @@ if (googleSignInBtn) {
     }
   });
 }
-
+// ===============================
 // Email / Password ログイン
+// ===============================
 if (emailSignInBtn) {
   emailSignInBtn.addEventListener("click", async (e) => {
     e.preventDefault();
 
-    const email = emailInput?.value.trim();
-    const password = passwordInput?.value;
+    // 入力値をまとめてチェック
+    if (!emailInput || !passwordInput) {
+      alert("内部エラー：入力欄が見つかりません💦");
+      console.error("emailInput / passwordInput が null です");
+      return;
+    }
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
 
     if (!email || !password) {
       alert("メールアドレスとパスワードを入力してね🧶");
@@ -115,7 +123,6 @@ if (emailSignInBtn) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       alert("ログイン成功！ユーザーID：" + user.uid);
-      // TODO: ここでマイページなどに遷移
     } catch (error) {
       console.error(error);
       alert("ログインエラー：" + error.message);
@@ -123,13 +130,21 @@ if (emailSignInBtn) {
   });
 }
 
+// ===============================
 // Email 新規登録
+// ===============================
 if (emailSignUpBtn) {
   emailSignUpBtn.addEventListener("click", async (e) => {
     e.preventDefault();
 
-    const email = emailInput?.value.trim();
-    const password = passwordInput?.value;
+    if (!emailInput || !passwordInput) {
+      alert("内部エラー：入力欄が見つかりません💦");
+      console.error("emailInput / passwordInput が null です");
+      return;
+    }
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
 
     if (!email || !password) {
       alert("メールアドレスとパスワードを入力してね🧶");
