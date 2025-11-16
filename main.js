@@ -112,10 +112,15 @@ const searchQueryInput = document.getElementById("searchQueryInput");
 const searchBtn = document.getElementById("searchBtn");
 const searchResultGallery = document.getElementById("searchResultGallery");
 // ▼▼ ここを自分の Firebase プロジェクトの設定で書き換えてね ▼▼
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
+ const firebaseConfig = {
+  apiKey: "AIzaSyDWmywzWr1lCjuSi51IAA-TQY1abNUNwhw",
+  authDomain: "amoca-61391.firebaseapp.com",
+  projectId: "amoca-61391",
+  storageBucket: "amoca-61391.firebasestorage.app",
+  messagingSenderId: "87355773454",
+  appId: "1:87355773454:web:562901265f8e970090225f",
+  measurementId: "G-RKHT3L59GS"
+};
   // storageBucket や他のキーは必要なら追加で
 };
 // ▲▲ ここまで ▲▲
