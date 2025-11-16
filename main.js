@@ -15,7 +15,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  signOut
+  signInWithPopup,
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 // --- 2. Firebase 設定（KAZUNE さんのプロジェクト） ---
@@ -33,7 +33,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
-
 // =============================
 //  3. 画面の要素を取得
 // =============================
