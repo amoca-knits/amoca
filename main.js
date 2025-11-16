@@ -29,14 +29,6 @@ import {
   limit,
 } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
 
-// ▼▼ ここを自分の Firebase プロジェクトの設定で書き換えてね ▼▼
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  // storageBucket や他のキーは必要なら追加で
-};
-// ▲▲ ここまで ▲▲
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -119,6 +111,14 @@ const yarnOthersEmpty = document.getElementById("yarnOthersEmpty");
 const searchQueryInput = document.getElementById("searchQueryInput");
 const searchBtn = document.getElementById("searchBtn");
 const searchResultGallery = document.getElementById("searchResultGallery");
+// ▼▼ ここを自分の Firebase プロジェクトの設定で書き換えてね ▼▼
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  // storageBucket や他のキーは必要なら追加で
+};
+// ▲▲ ここまで ▲▲
 const searchResultCount = document.getElementById("searchResultCount");
 const searchEmpty = document.getElementById("searchEmpty");
 
