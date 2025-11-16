@@ -1,11 +1,10 @@
 // =============================
 // Amoca knit note main.js
-// Firebase 認証 + 既存ノート機能（ローカル保存）
+// Firebase 認証 + 編み物ノート（ローカル保存）
 // =============================
 
 // --- 1. Firebase SDK 読み込み --------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-
 import {
   getAuth,
   onAuthStateChanged,
@@ -13,7 +12,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  signOut
+  signOut,
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 // --- 2. Firebase 設定（KAZUNE さんのプロジェクト） ---
@@ -24,7 +23,7 @@ const firebaseConfig = {
   storageBucket: "amoca-61391.firebasestorage.app",
   messagingSenderId: "87355773454",
   appId: "1:87355773454:web:562901265f8e970090225f",
-  measurementId: "G-RKHT3L59GS"
+  measurementId: "G-RKHT3L59GS",
 };
 
 // Firebase 初期化
@@ -35,24 +34,36 @@ const googleProvider = new GoogleAuthProvider();
 // =============================
 //  3. 画面の要素を取得
 // =============================
-// 画面ビュー
-const authView = document.getElementById("authView"); // ログインフォーム側
-const appView = document.getElementById("appView");   // ログイン後の画面
 
-// ヘッダーのユーザー名表示・ログアウト
+// 画面ビュー
+const authView = document.getElementById("authView"); // ログインフォーム
+const appView = document.getElementById("appView");   // ログイン後
+
+// ヘッダー
 const userDisplayNameEl = document.getElementById("userDisplayName");
+const ownerNameEl = document.getElementById("ownerName");
 const signOutBtn = document.getElementById("signOutBtn");
+
+// ログインフォーム
 const emailInput = document.getElementById("emailInput");
 const passwordInput = document.getElementById("passwordInput");
-
 const emailSignInBtn = document.getElementById("emailSignInBtn");
 const emailSignUpBtn = document.getElementById("emailSignUpBtn");
 const googleSignInBtn = document.getElementById("googleSignInBtn");
-
-// ログイン後に使う予定（今はとりあえず表示だけ）
 const loginStatusEl = document.getElementById("loginStatus");
 
-// 既存の編み物ノートのフォーム
+// プロフィールフォーム
+const profileNameInput = document.getElementById("profileName");
+const profileBioInput = document.getElementById("profileBio");
+const link1TitleInput = document.getElementById("link1Title");
+const link1UrlInput = document.getElementById("link1Url");
+const link2TitleInput = document.getElementById("link2Title");
+const link2UrlInput = document.getElementById("link2Url");
+const link3TitleInput = document.getElementById("link3Title");
+const link3UrlInput = document.getElementById("link3Url");
+const profileSaveBtn = document.getElementById("profileSaveBtn");
+
+// 編み物ノートのフォーム
 const yarnNameInput = document.getElementById("yarnName");
 const colorNumberInput = document.getElementById("colorNumber");
 const itemTypeInput = document.getElementById("itemType");
@@ -72,139 +83,9 @@ const yarnFilterSelect = document.getElementById("yarnFilter");
 const itemFilterSelect = document.getElementById("itemFilter");
 
 // =============================
-//  4. ログイン状態の監視
+//  4. プロフィール（ローカル保存）
 // =============================
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // ログイン中
-    const name = user.displayName || user.email || "ゲスト";
-    console.log("ログイン中：", name);
-
-    if (loginStatusEl) {
-      loginStatusEl.textContent = `ログイン中：${name}`;
-    }
-    if (userDisplayNameEl) {
-      userDisplayNameEl.textContent = name;
-    }
-
-    // 画面切り替え
-    if (authView) authView.style.display = "none";
-    if (appView) appView.style.display = "block";
-    loadProfile(user.uid, user);
-
-  } else {
-    console.log("ログアウト状態です");
-    if (loginStatusEl) {
-      loginStatusEl.textContent = "ログインしていません";
-    }
-    if (ownerNameEl) ownerNameEl.textContent = "ゲスト";
-  }
-});
-  
-
-    if (authView) authView.style.display = "block";
-    if (appView) appView.style.display = "none";
-
-// =============================
-//  5. 認証ボタンのイベント
-// =============================
-
-// Google でログイン
-if (googleSignInBtn) {
-  googleSignInBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      alert(`Google ログイン完了！\n${result.user.displayName || "ユーザー"}`);
-    } catch (err) {
-      console.error(err);
-      alert("Google ログインに失敗しました：\n" + (err.message || err.code));
-    }
-  });
-}
-// ===============================
-// Email / Password ログイン
-// ===============================
-if (emailSignInBtn) {
-  emailSignInBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
-
-    // 入力値をまとめてチェック
-    if (!emailInput || !passwordInput) {
-      alert("内部エラー：入力欄が見つかりません💦");
-      console.error("emailInput / passwordInput が null です");
-      return;
-    }
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-
-    if (!email || !password) {
-      alert("メールアドレスとパスワードを入力してね🧶");
-      return;
-    }
-
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      alert("ログイン成功！ユーザーID：" + user.uid);
-    } catch (error) {
-      console.error(error);
-      alert("ログインエラー：" + error.message);
-    }
-  });
-}
-
-// ===============================
-// Email 新規登録
-// ===============================
-if (emailSignUpBtn) {
-  emailSignUpBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
-
-    if (!emailInput || !passwordInput) {
-      alert("内部エラー：入力欄が見つかりません💦");
-      console.error("emailInput / passwordInput が null です");
-      return;
-    }
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-
-    if (!email || !password) {
-      alert("メールアドレスとパスワードを入力してね🧶");
-      return;
-    }
-    if (password.length < 6) {
-      alert("パスワードは 6 文字以上にしてね");
-      return;
-    }
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      alert("新規登録成功！ユーザーID：" + user.uid);
-    } catch (error) {
-      console.error(error);
-      alert("新規登録エラー：" + error.message);
-    }
-  });
-}
-
-// （必要になったらボタンとつなげる用のログアウト関数）
-async function handleSignOut() {
-  try {
-    await signOut(auth);
-    alert("ログアウトしました");
-  } catch (err) {
-    console.error(err);
-    alert("ログアウトに失敗しました：\n" + (err.message || err.code));
-  }
-}
-// =============================
-//  プロフィール（ローカル保存）
-// =============================
 function profileKey(uid) {
   return `amocaProfile_${uid}`;
 }
@@ -227,7 +108,6 @@ function loadProfile(uid, user) {
 
     if (profileNameInput) profileNameInput.value = profile.name || "";
     if (profileBioInput) profileBioInput.value = profile.bio || "";
-
     if (link1TitleInput) link1TitleInput.value = profile.link1Title || "";
     if (link1UrlInput) link1UrlInput.value = profile.link1Url || "";
     if (link2TitleInput) link2TitleInput.value = profile.link2Title || "";
@@ -241,56 +121,6 @@ function loadProfile(uid, user) {
     applyOwnerName(null, user);
   }
 }
-// =============================
-//  プロフィール（ローカル保存）
-// =============================
-function profileKey(uid) {
-  return `amocaProfile_${uid}`;
-}
-
-function applyOwnerName(profile, user) {
-  const fallback =
-    user?.displayName ||
-    (user?.email ? user.email.split("@")[0] : "あなた");
-
-  if (ownerNameEl) {
-    ownerNameEl.textContent = profile?.name || fallback;
-  }
-}
-
-function loadProfile(uid, user) {
-  if (!uid) return;
-  try {
-    const raw = localStorage.getItem(profileKey(uid));
-    const profile = raw ? JSON.parse(raw) : {};
-
-    if (profileNameInput) profileNameInput.value = profile.name || "";
-    if (profileBioInput) profileBioInput.value = profile.bio || "";
-
-    if (link1TitleInput) link1TitleInput.value = profile.link1Title || "";
-    if (link1UrlInput) link1UrlInput.value = profile.link1Url || "";
-    if (link2TitleInput) link2TitleInput.value = profile.link2Title || "";
-    if (link2UrlInput) link2UrlInput.value = profile.link2Url || "";
-    if (link3TitleInput) link3TitleInput.value = profile.link3Title || "";
-    if (link3UrlInput) link3UrlInput.value = profile.link3Url || "";
-
-    applyOwnerName(profile, user);
-  } catch (e) {
-    console.error("loadProfile error", e);
-    applyOwnerName(null, user);
-  }
-}
-// --- プロフィール関連 ---
-const ownerNameEl = document.getElementById("ownerName");
-const profileNameInput = document.getElementById("profileName");
-const profileBioInput = document.getElementById("profileBio");
-const link1TitleInput = document.getElementById("link1Title");
-const link1UrlInput = document.getElementById("link1Url");
-const link2TitleInput = document.getElementById("link2Title");
-const link2UrlInput = document.getElementById("link2Url");
-const link3TitleInput = document.getElementById("link3Title");
-const link3UrlInput = document.getElementById("link3Url");
-const profileSaveBtn = document.getEleme
 
 function saveProfile(uid, user) {
   if (!uid) return;
@@ -303,7 +133,7 @@ function saveProfile(uid, user) {
     link2Title: link2TitleInput?.value.trim() || "",
     link2Url: link2UrlInput?.value.trim() || "",
     link3Title: link3TitleInput?.value.trim() || "",
-    link3Url: link3UrlInput?.value.trim() || ""
+    link3Url: link3UrlInput?.value.trim() || "",
   };
 
   try {
@@ -314,35 +144,41 @@ function saveProfile(uid, user) {
     console.error("saveProfile error", e);
     alert("プロフィールの保存に失敗しちゃいました…");
   }
+}
+
+// =============================
+//  5. ログイン状態の監視
+// =============================
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    const name = user.displayName || user.email || "ゲスト";
+    console.log("ログイン中：", name);
+
+    if (loginStatusEl) loginStatusEl.textContent = `ログイン中：${name}`;
+    if (userDisplayNameEl) userDisplayNameEl.textContent = name;
+
+    if (authView) authView.style.display = "none";
+    if (appView) appView.style.display = "block";
+
+    loadProfile(user.uid, user);
+  } else {
+    console.log("ログアウト状態です");
+    if (loginStatusEl) loginStatusEl.textContent = "ログインしていません";
+    if (userDisplayNameEl) userDisplayNameEl.textContent = "";
+    if (ownerNameEl) ownerNameEl.textContent = "ゲスト";
+
+    if (authView) authView.style.display = "block";
+    if (appView) appView.style.display = "none";
+  }
+});
 
 // =============================
 //  6. 編み物ノート（ローカル保存）
 // =============================
 
 let records = [];
-let editingRecordId = null; // いま編集中の記録の id（なければ null）
-    // ---- ここから追加：編集・削除ボタン ----
-    const actions = document.createElement("div");
-    actions.className = "entry-actions";
-
-    const editBtn = document.createElement("button");
-    editBtn.textContent = "編集";
-    editBtn.className = "btn btn-sm";
-    editBtn.addEventListener("click", () => {
-      startEditRecord(rec.id);
-    });
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "削除";
-    deleteBtn.className = "btn btn-sm btn-outline";
-    deleteBtn.addEventListener("click", () => {
-      deleteRecord(rec.id);
-    });
-
-    actions.appendChild(editBtn);
-    actions.appendChild(deleteBtn);
-    card.appendChild(actions);
-    // ---- 追加ここまで ----
+let editingRecordId = null;
 
 // ローカルストレージから読み込み
 function loadRecords() {
@@ -419,6 +255,29 @@ function renderRecords() {
       card.appendChild(memo);
     }
 
+    // --- 編集・削除ボタン ---
+    const actions = document.createElement("div");
+    actions.className = "entry-actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "編集";
+    editBtn.className = "btn btn-sm";
+    editBtn.addEventListener("click", () => {
+      startEditRecord(rec.id);
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "削除";
+    deleteBtn.className = "btn btn-sm btn-outline";
+    deleteBtn.addEventListener("click", () => {
+      deleteRecord(rec.id);
+    });
+
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+    card.appendChild(actions);
+    // -------------------------
+
     listArea.appendChild(card);
   });
 
@@ -429,8 +288,12 @@ function renderRecords() {
 function updateFilterOptions() {
   if (!yarnFilterSelect || !itemFilterSelect) return;
 
-  const yarnNames = Array.from(new Set(records.map((r) => r.yarnName).filter(Boolean)));
-  const itemTypes = Array.from(new Set(records.map((r) => r.itemType).filter(Boolean)));
+  const yarnNames = Array.from(
+    new Set(records.map((r) => r.yarnName).filter(Boolean))
+  );
+  const itemTypes = Array.from(
+    new Set(records.map((r) => r.itemType).filter(Boolean))
+  );
 
   yarnFilterSelect.innerHTML = '<option value="ALL">すべて</option>';
   itemFilterSelect.innerHTML = '<option value="ALL">すべて</option>';
@@ -450,9 +313,7 @@ function updateFilterOptions() {
   });
 }
 
-// 新しい記録を追加
-function handleSaveRecord() {
-    // 記録の編集を開始（フォームに値を入れる）
+// 記録の編集開始（フォームに値を入れる）
 function startEditRecord(id) {
   const target = records.find((r) => r.id === id);
   if (!target) return;
@@ -470,7 +331,6 @@ function startEditRecord(id) {
   if (endDateInput) endDateInput.value = target.endDate || "";
   if (memoInput) memoInput.value = target.memo || "";
 
-  // 一番上のフォームまでスクロール（お好みで）
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -487,6 +347,9 @@ function deleteRecord(id) {
     resetForm();
   }
 }
+
+// 新しい記録を追加（または編集を反映）
+function handleSaveRecord() {
   if (!yarnNameInput || !itemTypeInput || !ballsUsedInput) return;
 
   const yarnName = yarnNameInput.value.trim();
@@ -505,8 +368,7 @@ function deleteRecord(id) {
     return;
   }
 
-  const newRecord = {
-    id: Date.now(),
+  const baseRecord = {
     yarnName,
     colorNumber,
     itemType,
@@ -517,25 +379,44 @@ function deleteRecord(id) {
     startDate,
     endDate,
     memo,
-    photoDataUrl: null
   };
 
   const file = photoInput?.files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      newRecord.photoDataUrl = reader.result;
-      records.unshift(newRecord);
-      saveRecords();
-      renderRecords();
-      resetForm();
+
+  const applyAndSave = (photoDataUrl) => {
+    const record = {
+      id: editingRecordId ?? Date.now(),
+      ...baseRecord,
+      photoDataUrl: photoDataUrl ?? null,
     };
-    reader.readAsDataURL(file);
-  } else {
-    records.unshift(newRecord);
+
+    if (editingRecordId) {
+      // 上書き
+      records = records.map((r) => (r.id === editingRecordId ? record : r));
+    } else {
+      // 新規追加（先頭に）
+      records.unshift(record);
+    }
+
+    editingRecordId = null;
     saveRecords();
     renderRecords();
     resetForm();
+  };
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      applyAndSave(reader.result);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // 写真なしで保存
+    applyAndSave(
+      editingRecordId
+        ? records.find((r) => r.id === editingRecordId)?.photoDataUrl || null
+        : null
+    );
   }
 }
 
@@ -559,24 +440,96 @@ function resetForm() {
 // =============================
 
 function init() {
-    if (profileSaveBtn) {
-  profileSaveBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const user = auth.currentUser;
-    if (!user) {
-      alert("ログインしてからプロフィールを保存してね🧶");
-      return;
-    }
-    saveProfile(user.uid, user);
-  });
-}
-      // ログアウトボタン
-  if (signOutBtn) {
-    signOutBtn.addEventListener("click", (e) => {
+  // 認証ボタン
+  if (googleSignInBtn) {
+    googleSignInBtn.addEventListener("click", async (e) => {
       e.preventDefault();
-      handleSignOut();
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        alert(`Google ログイン完了！\n${result.user.displayName || "ユーザー"}`);
+      } catch (err) {
+        console.error(err);
+        alert("Google ログインに失敗しました：\n" + (err.message || err.code));
+      }
     });
   }
+
+  if (emailSignInBtn) {
+    emailSignInBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (!emailInput || !passwordInput) return;
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        alert("メールアドレスとパスワードを入力してね🧶");
+        return;
+      }
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        alert("ログイン成功！ユーザーID：" + userCredential.user.uid);
+      } catch (error) {
+        console.error(error);
+        alert("ログインエラー：" + error.message);
+      }
+    });
+  }
+
+  if (emailSignUpBtn) {
+    emailSignUpBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (!emailInput || !passwordInput) return;
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        alert("メールアドレスとパスワードを入力してね🧶");
+        return;
+      }
+      if (password.length < 6) {
+        alert("パスワードは 6 文字以上にしてね");
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        alert("新規登録成功！ユーザーID：" + userCredential.user.uid);
+      } catch (error) {
+        console.error(error);
+        alert("新規登録エラー：" + error.message);
+      }
+    });
+  }
+
+  if (signOutBtn) {
+    signOutBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        await signOut(auth);
+        alert("ログアウトしました");
+      } catch (err) {
+        console.error(err);
+        alert("ログアウトに失敗しました：\n" + (err.message || err.code));
+      }
+    });
+  }
+
+  if (profileSaveBtn) {
+    profileSaveBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) {
+        alert("ログインしてからプロフィールを保存してね🧶");
+        return;
+      }
+      saveProfile(user.uid, user);
+    });
+  }
+
+  // ノートの読み込み＆イベント
   loadRecords();
   renderRecords();
 
