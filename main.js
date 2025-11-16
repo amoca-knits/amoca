@@ -4,9 +4,7 @@
 // =============================
 
 // --- 1. Firebase SDK 読み込み --------------------
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 
 import {
   getAuth,
@@ -15,7 +13,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  signInWithPopup,
+  signOut
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 // --- 2. Firebase 設定（KAZUNE さんのプロジェクト） ---
@@ -33,6 +31,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+
 // =============================
 //  3. 画面の要素を取得
 // =============================
@@ -47,7 +46,7 @@ const googleSignInBtn = document.getElementById("googleSignInBtn");
 // ログイン後に使う予定（今はとりあえず表示だけ）
 const loginStatusEl = document.getElementById("loginStatus");
 
-// もし既存の編み物ノートのフォームが同じページにあるなら取得
+// 既存の編み物ノートのフォーム
 const yarnNameInput = document.getElementById("yarnName");
 const colorNumberInput = document.getElementById("colorNumber");
 const itemTypeInput = document.getElementById("itemType");
@@ -62,7 +61,7 @@ const memoInput = document.getElementById("memo");
 const saveButton = document.getElementById("saveButton");
 const listArea = document.getElementById("listArea");
 
-// フィルター（存在すれば使う）
+// フィルター
 const yarnFilterSelect = document.getElementById("yarnFilter");
 const itemFilterSelect = document.getElementById("itemFilter");
 
@@ -74,38 +73,16 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     const msg = `ログイン中：${user.email || "Google アカウント"}`;
     console.log(msg);
-    if (loginStatusEl) {
-      loginStatusEl.textContent = msg;
-    }
+    if (loginStatusEl) loginStatusEl.textContent = msg;
   } else {
     console.log("ログアウト状態です");
-    if (loginStatusEl) {
-      loginStatusEl.textContent = "ログインしていません";
-    }
+    if (loginStatusEl) loginStatusEl.textContent = "ログインしていません";
   }
 });
 
 // =============================
-//  5. ボタンのイベント設定
+//  5. 認証ボタンのイベント
 // =============================
-
-// ユーティリティ：入力チェック用
-function getEmailAndPassword() {
-  const email = emailInput?.value.trim();
-  const password = passwordInput?.value;
-
-  if (!email || !password) {
-    alert("メールアドレスとパスワードを入力してね🧶");
-    return null;
-  }
-  if (password.length < 6) {
-    alert("パスワードは 6 文字以上にしてね");
-    return null;
-  }
-  return { email, password };
-}
-
-
 
 // Google でログイン
 if (googleSignInBtn) {
@@ -120,53 +97,61 @@ if (googleSignInBtn) {
     }
   });
 }
-// ===============================
+
 // Email / Password ログイン
-// ===============================
-emailSignInBtn.addEventListener("click", async () => {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
+if (emailSignInBtn) {
+  emailSignInBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
 
-  if (!email || !password) {
-    alert("メールアドレスとパスワードを入力してね🧶");
-    return;
-  }
+    const email = emailInput?.value.trim();
+    const password = passwordInput?.value;
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    if (!email || !password) {
+      alert("メールアドレスとパスワードを入力してね🧶");
+      return;
+    }
 
-    alert("ログイン成功！ユーザーID：" + user.uid);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      alert("ログイン成功！ユーザーID：" + user.uid);
+      // TODO: ここでマイページなどに遷移
+    } catch (error) {
+      console.error(error);
+      alert("ログインエラー：" + error.message);
+    }
+  });
+}
 
-    // TODO: ここで画面遷移（後で作る）
-  } catch (error) {
-    alert("ログインエラー：" + error.message);
-  }
-});
-
-// ===============================
 // Email 新規登録
-// ===============================
-emailSignUpBtn.addEventListener("click", async () => {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
+if (emailSignUpBtn) {
+  emailSignUpBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
 
-  if (!email || !password) {
-    alert("メールアドレスとパスワードを入力してね🧶");
-    return;
-  }
+    const email = emailInput?.value.trim();
+    const password = passwordInput?.value;
 
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    if (!email || !password) {
+      alert("メールアドレスとパスワードを入力してね🧶");
+      return;
+    }
+    if (password.length < 6) {
+      alert("パスワードは 6 文字以上にしてね");
+      return;
+    }
 
-    alert("新規登録成功！ユーザーID：" + user.uid);
-    
-  } catch (error) {
-    alert("新規登録エラー：" + error.message);
-  }
-});
-// （必要になったらログアウトボタンも繋げられるように関数だけ用意）
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      alert("新規登録成功！ユーザーID：" + user.uid);
+    } catch (error) {
+      console.error(error);
+      alert("新規登録エラー：" + error.message);
+    }
+  });
+}
+
+// （必要になったらボタンとつなげる用のログアウト関数）
 async function handleSignOut() {
   try {
     await signOut(auth);
@@ -178,8 +163,7 @@ async function handleSignOut() {
 }
 
 // =============================
-//  6. 編み物ノート（ローカル保存版）
-//     ※ ここは、これまで PC で動いていた内容のシンプル版
+//  6. 編み物ノート（ローカル保存）
 // =============================
 
 let records = [];
@@ -213,12 +197,12 @@ function renderRecords() {
   if (!records.length) {
     const div = document.createElement("div");
     div.className = "empty-state";
-    div.textContent = "まだ記録がありません。左のフォームから最初の作品を追加してみてね🧶";
+    div.textContent =
+      "まだ記録がありません。左のフォームから最初の作品を追加してみてね🧶";
     listArea.appendChild(div);
     return;
   }
 
-  // フィルター
   const yarnFilter = yarnFilterSelect?.value || "ALL";
   const itemFilter = itemFilterSelect?.value || "ALL";
 
@@ -233,7 +217,7 @@ function renderRecords() {
     card.className = "entry-card";
 
     const title = document.createElement("div");
-    title.innerHTML = `<strong>${rec.itemType || "作品"}</strong>  /  ${rec.yarnName || ""}`;
+    title.innerHTML = `<strong>${rec.itemType || "作品"}</strong> / ${rec.yarnName || ""}`;
     card.appendChild(title);
 
     const meta = document.createElement("div");
@@ -262,7 +246,6 @@ function renderRecords() {
     listArea.appendChild(card);
   });
 
-  // フィルター用セレクトの中身更新
   updateFilterOptions();
 }
 
@@ -347,16 +330,16 @@ function handleSaveRecord() {
 
 // フォームのリセット
 function resetForm() {
-  yarnNameInput && (yarnNameInput.value = "");
-  colorNumberInput && (colorNumberInput.value = "");
-  itemTypeInput && (itemTypeInput.value = "");
-  ballsUsedInput && (ballsUsedInput.value = "");
-  needleSizeInput && (needleSizeInput.value = "");
-  purchasePlaceInput && (purchasePlaceInput.value = "");
-  workHoursInput && (workHoursInput.value = "");
-  startDateInput && (startDateInput.value = "");
-  endDateInput && (endDateInput.value = "");
-  memoInput && (memoInput.value = "");
+  if (yarnNameInput) yarnNameInput.value = "";
+  if (colorNumberInput) colorNumberInput.value = "";
+  if (itemTypeInput) itemTypeInput.value = "";
+  if (ballsUsedInput) ballsUsedInput.value = "";
+  if (needleSizeInput) needleSizeInput.value = "";
+  if (purchasePlaceInput) purchasePlaceInput.value = "";
+  if (workHoursInput) workHoursInput.value = "";
+  if (startDateInput) startDateInput.value = "";
+  if (endDateInput) endDateInput.value = "";
+  if (memoInput) memoInput.value = "";
   if (photoInput) photoInput.value = "";
 }
 
@@ -365,11 +348,9 @@ function resetForm() {
 // =============================
 
 function init() {
-  // ローカルの記録を読み込んで表示
   loadRecords();
   renderRecords();
 
-  // 保存ボタン
   if (saveButton) {
     saveButton.addEventListener("click", (e) => {
       e.preventDefault();
@@ -377,7 +358,6 @@ function init() {
     });
   }
 
-  // フィルター
   if (yarnFilterSelect) {
     yarnFilterSelect.addEventListener("change", renderRecords);
   }
