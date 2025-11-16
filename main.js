@@ -1,347 +1,907 @@
-// ===== IndexedDB の準備 =====
-const DB_NAME = "amocaDB";
-const STORE_NAME = "records";
-let db = null;
+// main.js（Firebase版 Amoca 完全たたき台）
+// ※ このファイルは <script type="module" src="./main.js"></script> で読み込まれます。
 
-// DB を開く（なければ作る）
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
+// ==============================
+// 1. Firebase 初期化
+// ==============================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
 
-    req.onupgradeneeded = (e) => {
-      const database = e.target.result;
-      if (!database.objectStoreNames.contains(STORE_NAME)) {
-        database.createObjectStore(STORE_NAME, { keyPath: "id" });
-      }
-    };
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  serverTimestamp,
+  limit,
+} from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
 
-    req.onsuccess = (e) => {
-      db = e.target.result;
-      resolve(db);
-    };
+// ▼▼ ここを自分の Firebase プロジェクトの設定で書き換えてね ▼▼
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  // storageBucket や他のキーは必要なら追加で
+};
+// ▲▲ ここまで ▲▲
 
-    req.onerror = () => reject(req.error);
-  });
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+
+// ==============================
+// 2. DOM 取得
+// ==============================
+
+// 共通
+const headerUserArea = document.getElementById("headerUserArea");
+
+// 認証ビュー
+const authView = document.getElementById("authView");
+const appView = document.getElementById("appView");
+const authEmail = document.getElementById("authEmail");
+const authPassword = document.getElementById("authPassword");
+const emailSignInBtn = document.getElementById("emailSignInBtn");
+const emailSignUpBtn = document.getElementById("emailSignUpBtn");
+const googleSignInBtn = document.getElementById("googleSignInBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+
+// ナビ & ビュー
+const navTabs = document.querySelectorAll(".nav-tab");
+const myPageView = document.getElementById("myPageView");
+const searchView = document.getElementById("searchView");
+
+// プロフィール
+const profileAvatar = document.getElementById("profileAvatar");
+const profileNameInput = document.getElementById("profileName");
+const profileBioInput = document.getElementById("profileBio");
+const link1LabelInput = document.getElementById("link1Label");
+const link1UrlInput = document.getElementById("link1Url");
+const link2LabelInput = document.getElementById("link2Label");
+const link2UrlInput = document.getElementById("link2Url");
+const link3LabelInput = document.getElementById("link3Label");
+const link3UrlInput = document.getElementById("link3Url");
+const saveProfileBtn = document.getElementById("saveProfileBtn");
+const profileLinksPreview = document.getElementById("profileLinksPreview");
+
+// 作品フォーム & ギャラリー
+const itemTypeInput = document.getElementById("itemTypeInput");
+const yarnNameInput = document.getElementById("yarnNameInput");
+const ballsUsedInput = document.getElementById("ballsUsedInput");
+const needleSizeInput = document.getElementById("needleSizeInput");
+const startDateInput = document.getElementById("startDateInput");
+const endDateInput = document.getElementById("endDateInput");
+const photoInput = document.getElementById("photoInput");
+const memoInput = document.getElementById("memoInput");
+const saveRecordBtn = document.getElementById("saveRecordBtn");
+
+const itemFilterSelect = document.getElementById("itemFilterSelect");
+const recordsGallery = document.getElementById("recordsGallery");
+const recordsEmpty = document.getElementById("recordsEmpty");
+
+// 毛糸一覧
+const yarnNameFilterInput = document.getElementById("yarnNameFilter");
+const colorCategoryFilterSelect = document.getElementById("colorCategoryFilter");
+const yarnMasterNameInput = document.getElementById("yarnMasterNameInput");
+const yarnColorCategoryInput = document.getElementById("yarnColorCategoryInput");
+const yarnColorMemoInput = document.getElementById("yarnColorMemoInput");
+const yarnStockInput = document.getElementById("yarnStockInput");
+const addYarnBtn = document.getElementById("addYarnBtn");
+const yarnTableBody = document.getElementById("yarnTableBody");
+const yarnEmpty = document.getElementById("yarnEmpty");
+
+// 毛糸ギャラリーモーダル
+const yarnModal = document.getElementById("yarnModal");
+const closeYarnModalBtn = document.getElementById("closeYarnModalBtn");
+const yarnModalTitle = document.getElementById("yarnModalTitle");
+const yarnModalColorBadge = document.getElementById("yarnModalColorBadge");
+const yarnModalInfo = document.getElementById("yarnModalInfo");
+const yarnMyGallery = document.getElementById("yarnMyGallery");
+const yarnMyEmpty = document.getElementById("yarnMyEmpty");
+const yarnOthersGallery = document.getElementById("yarnOthersGallery");
+const yarnOthersEmpty = document.getElementById("yarnOthersEmpty");
+
+// 検索関連
+const searchQueryInput = document.getElementById("searchQueryInput");
+const searchBtn = document.getElementById("searchBtn");
+const searchResultGallery = document.getElementById("searchResultGallery");
+const searchResultCount = document.getElementById("searchResultCount");
+const searchEmpty = document.getElementById("searchEmpty");
+
+// ==============================
+// 3. 状態管理用 変数
+// ==============================
+
+let currentUser = null;       // Firebase Auth のユーザー
+let currentProfile = null;    // users コレクションのプロフィール
+let userRecords = [];         // 自分の作品
+let userYarns = [];           // 自分の毛糸
+
+// ==============================
+// 4. ユーティリティ関数
+// ==============================
+
+function setHidden(el, hidden) {
+  if (!el) return;
+  if (hidden) el.classList.add("hidden");
+  else el.classList.remove("hidden");
 }
 
-// 1件保存（新規 or 更新）
-function saveRecordToDB(record) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    store.put(record);
-
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
+function safeText(str) {
+  return (str ?? "").toString();
 }
 
-// 1件削除
-function deleteRecordFromDB(id) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    store.delete(id);
-
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
+function getInitialFromName(name) {
+  const n = (name || "").trim();
+  if (!n) return "A";
+  return n[0].toUpperCase();
 }
 
-// 全件読み込み
-function loadAllRecords() {
+// File -> base64 DataURL
+function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const req = store.getAll();
-
-    req.onsuccess = () => resolve(req.result || []);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-// ===== ここから Amoca ロジック =====
-
-let records = [];
-let editingId = null;
-
-// DOM取得
-const yarnNameInput = document.getElementById("yarnName");
-const colorNumberInput = document.getElementById("colorNumber");
-const itemTypeInput = document.getElementById("itemType");
-const ballsUsedInput = document.getElementById("ballsUsed");
-const needleSizeInput = document.getElementById("needleSize");
-const purchasePlaceInput = document.getElementById("purchasePlace");
-const workHoursInput = document.getElementById("workHours");
-const startDateInput = document.getElementById("startDate");
-const endDateInput = document.getElementById("endDate");
-const memoInput = document.getElementById("memo");
-const photoInput = document.getElementById("photo");
-
-const saveButton = document.getElementById("saveButton");
-const listArea = document.getElementById("listArea");
-
-const yarnFilter = document.getElementById("yarnFilter");
-const itemFilter = document.getElementById("itemFilter");
-
-// 初期化
-document.addEventListener("DOMContentLoaded", async () => {
-  await openDB();
-  records = await loadAllRecords();
-  renderFilters();
-  renderList();
-
-  saveButton.addEventListener("click", onSaveClick);
-  yarnFilter.addEventListener("change", renderList);
-  itemFilter.addEventListener("change", renderList);
-});
-
-// 画像圧縮
-function compressImage(file, maxWidth, quality) {
-  return new Promise((resolve, reject) => {
+    if (!file) {
+      resolve(null);
+      return;
+    }
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const scale = img.width > maxWidth ? maxWidth / img.width : 1;
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width * scale;
-          canvas.height = img.height * scale;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL("image/jpeg", quality);
-          resolve(dataUrl);
-        } catch (err) {
-          reject(err);
-        }
-      };
-      img.onerror = reject;
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = e => reject(e);
     reader.readAsDataURL(file);
   });
 }
 
-// 保存クリック
-async function onSaveClick() {
-  const baseData = {
-    yarnName: yarnNameInput.value.trim(),
-    colorNumber: colorNumberInput.value.trim(),
-    itemType: itemTypeInput.value.trim(),
-    ballsUsed: ballsUsedInput.value ? Number(ballsUsedInput.value) : null,
-    needleSize: needleSizeInput.value.trim(),
-    purchasePlace: purchasePlaceInput.value.trim(),
-    workHours: workHoursInput.value ? Number(workHoursInput.value) : null,
-    startDate: startDateInput.value,
-    endDate: endDateInput.value,
-    memo: memoInput.value.trim(),
+// createdAt の Date をミリ秒取得（null も考慮）
+function getCreatedAtMs(data) {
+  const ts = data.createdAt;
+  if (!ts) return 0;
+  try {
+    return ts.toMillis();
+  } catch {
+    return 0;
+  }
+}
+
+// ==============================
+// 5. 認証関連
+// ==============================
+
+// ヘッダーのユーザー表示更新
+function renderHeaderUser(user) {
+  if (!user) {
+    headerUserArea.innerHTML = `
+      <span>ログインしていません</span>
+    `;
+    return;
+  }
+  const name = user.displayName || user.email || "User";
+  const initial = getInitialFromName(name);
+  headerUserArea.innerHTML = `
+    <div class="avatar-circle">${initial}</div>
+    <div>
+      <div style="font-size:0.8rem;">${name}</div>
+      <div style="font-size:0.7rem;color:#777;">ログイン中</div>
+    </div>
+  `;
+}
+
+// ログイン / ログアウトビュー切り替え
+function updateAuthView(user) {
+  if (user) {
+    setHidden(authView, true);
+    setHidden(appView, false);
+  } else {
+    setHidden(authView, false);
+    setHidden(appView, true);
+  }
+}
+
+// メールログイン
+emailSignInBtn.addEventListener("click", async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value.trim();
+  if (!email || !password) {
+    alert("メールアドレスとパスワードを入力してください。");
+    return;
+  }
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    console.error(err);
+    alert("ログインに失敗しました：" + (err.message || ""));
+  }
+});
+
+// メール新規登録
+emailSignUpBtn.addEventListener("click", async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value.trim();
+  if (!email || !password) {
+    alert("メールアドレスとパスワードを入力してください。");
+    return;
+  }
+  if (password.length < 6) {
+    alert("パスワードは6文字以上にしてください。");
+    return;
+  }
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    alert("アカウントを作成しました。");
+  } catch (err) {
+    console.error(err);
+    alert("新規登録に失敗しました：" + (err.message || ""));
+  }
+});
+
+// Google ログイン
+googleSignInBtn.addEventListener("click", async () => {
+  try {
+    await signInWithPopup(auth, googleProvider);
+  } catch (err) {
+    console.error(err);
+    alert("Googleログインに失敗しました：" + (err.message || ""));
+  }
+});
+
+// ログアウト
+logoutBtn.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+  } catch (err) {
+    console.error(err);
+    alert("ログアウトに失敗しました：" + (err.message || ""));
+  }
+});
+
+// ==============================
+// 6. Firestore: プロフィール
+// ==============================
+
+async function loadUserProfile(uid) {
+  const ref = doc(db, "users", uid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    currentProfile = snap.data();
+  } else {
+    currentProfile = {
+      displayName: "",
+      bio: "",
+      links: [],
+    };
+  }
+  applyProfileToForm();
+}
+
+function applyProfileToForm() {
+  if (!currentProfile) return;
+  profileNameInput.value = currentProfile.displayName || "";
+  profileBioInput.value = currentProfile.bio || "";
+
+  const links = currentProfile.links || [];
+  const l1 = links[0] || {};
+  const l2 = links[1] || {};
+  const l3 = links[2] || {};
+
+  link1LabelInput.value = l1.label || "";
+  link1UrlInput.value = l1.url || "";
+  link2LabelInput.value = l2.label || "";
+  link2UrlInput.value = l2.url || "";
+  link3LabelInput.value = l3.label || "";
+  link3UrlInput.value = l3.url || "";
+
+  const initial = getInitialFromName(currentProfile.displayName || (currentUser && currentUser.email));
+  profileAvatar.textContent = initial;
+
+  renderProfileLinksPreview();
+}
+
+function renderProfileLinksPreview() {
+  profileLinksPreview.innerHTML = "";
+  if (!currentProfile) return;
+
+  const links = currentProfile.links || [];
+  links.forEach(link => {
+    if (!link.url) return;
+    const a = document.createElement("a");
+    a.href = link.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.className = "link-pill";
+    a.textContent = link.label || link.url;
+    profileLinksPreview.appendChild(a);
+  });
+}
+
+saveProfileBtn.addEventListener("click", async () => {
+  if (!currentUser) {
+    alert("ログインしてください。");
+    return;
+  }
+  const displayName = profileNameInput.value.trim();
+  const bio = profileBioInput.value.trim();
+
+  const links = [];
+  if (link1UrlInput.value.trim()) {
+    links.push({ label: link1LabelInput.value.trim() || "Link 1", url: link1UrlInput.value.trim() });
+  }
+  if (link2UrlInput.value.trim()) {
+    links.push({ label: link2LabelInput.value.trim() || "Link 2", url: link2UrlInput.value.trim() });
+  }
+  if (link3UrlInput.value.trim()) {
+    links.push({ label: link3LabelInput.value.trim() || "Link 3", url: link3UrlInput.value.trim() });
+  }
+
+  const data = {
+    displayName,
+    bio,
+    links,
+    updatedAt: serverTimestamp(),
   };
 
-  if (!baseData.yarnName && !baseData.itemType) {
-    alert("毛糸名か作品名のどちらかは入力してね🧶");
-    return;
+  try {
+    await setDoc(doc(db, "users", currentUser.uid), data, { merge: true });
+    currentProfile = { ...(currentProfile || {}), ...data };
+    applyProfileToForm();
+    alert("プロフィールを保存しました。");
+  } catch (err) {
+    console.error(err);
+    alert("プロフィールの保存に失敗しました。");
   }
+});
 
-  let photoData = null;
+// ==============================
+// 7. Firestore: 作品（records）
+// ==============================
 
-  const file = photoInput.files[0];
+// 自分の作品を全部読み込み
+async function loadUserRecords(uid) {
+  userRecords = [];
+  const q = query(collection(db, "records"), where("userId", "==", uid));
+  const snap = await getDocs(q);
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    userRecords.push({
+      id: docSnap.id,
+      ...data,
+    });
+  });
 
-  if (file) {
-    try {
-      photoData = await compressImage(file, 700, 0.6); // 少し強めに圧縮
-    } catch (e) {
-      console.error(e);
-      alert("写真の読み込みに失敗しました");
-    }
-  } else if (editingId != null) {
-    const old = records.find((r) => r.id === editingId);
-    if (old && old.photoData) photoData = old.photoData;
-  }
+  // createdAt で並び替え（新着順）
+  userRecords.sort((a, b) => getCreatedAtMs(b) - getCreatedAtMs(a));
+  refreshItemFilterOptions();
+  renderRecordsGallery();
+}
 
-  if (editingId != null) {
-    // 編集
-    const idx = records.findIndex((r) => r.id === editingId);
-    if (idx >= 0) {
-      records[idx] = { ...records[idx], ...baseData, photoData };
-      await saveRecordToDB(records[idx]);
-    }
-    editingId = null;
+function refreshItemFilterOptions() {
+  const set = new Set();
+  userRecords.forEach(r => {
+    if (r.itemType) set.add(r.itemType);
+  });
+  const currentVal = itemFilterSelect.value;
+  itemFilterSelect.innerHTML = `<option value="ALL">すべて</option>`;
+  [...set].sort().forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item;
+    opt.textContent = item;
+    itemFilterSelect.appendChild(opt);
+  });
+  if ([...set, "ALL"].includes(currentVal)) {
+    itemFilterSelect.value = currentVal;
   } else {
-    // 新規
-    const newRecord = {
-      id: Date.now(),
-      ...baseData,
-      photoData,
-      createdAt: new Date().toISOString(),
-    };
-    records.unshift(newRecord);
-    await saveRecordToDB(newRecord);
+    itemFilterSelect.value = "ALL";
   }
-
-  clearForm();
-  renderFilters();
-  renderList();
 }
 
-// フォームクリア
-function clearForm() {
-  yarnNameInput.value = "";
-  colorNumberInput.value = "";
-  itemTypeInput.value = "";
-  ballsUsedInput.value = "";
-  needleSizeInput.value = "";
-  purchasePlaceInput.value = "";
-  workHoursInput.value = "";
-  startDateInput.value = "";
-  endDateInput.value = "";
-  memoInput.value = "";
-  photoInput.value = "";
-  saveButton.textContent = "Save";
+function renderRecordsGallery() {
+  recordsGallery.innerHTML = "";
+  let filtered = userRecords.slice();
+
+  const filterItem = itemFilterSelect.value;
+  if (filterItem && filterItem !== "ALL") {
+    filtered = filtered.filter(r => (r.itemType || "") === filterItem);
+  }
+
+  if (!filtered.length) {
+    setHidden(recordsEmpty, false);
+    return;
+  } else {
+    setHidden(recordsEmpty, true);
+  }
+
+  filtered.forEach(record => {
+    const card = document.createElement("div");
+    card.className = "thumb-card";
+
+    if (record.photoData) {
+      const img = document.createElement("img");
+      img.src = record.photoData;
+      img.className = "thumb-photo";
+      card.appendChild(img);
+
+      const label = document.createElement("div");
+      label.className = "thumb-label";
+      label.textContent = record.itemType || "(アイテム未記入)";
+      card.appendChild(label);
+    } else {
+      const wrapper = document.createElement("div");
+      wrapper.className = "thumb-text";
+
+      const title = document.createElement("div");
+      title.className = "thumb-text-title";
+      title.textContent = record.itemType || "(アイテム未記入)";
+
+      const body = document.createElement("div");
+      body.className = "thumb-text-body";
+      const yarnName = record.yarnName ? `毛糸：${record.yarnName}` : "";
+      const memo = record.memo ? `メモ：${record.memo}` : "";
+      body.textContent = [yarnName, memo].filter(Boolean).join(" / ");
+
+      wrapper.appendChild(title);
+      wrapper.appendChild(body);
+      card.appendChild(wrapper);
+    }
+
+    // 将来的に詳細表示や編集に飛べるようにクリックイベントをここに追加してもOK
+    recordsGallery.appendChild(card);
+  });
 }
 
-// リスト描画
-function renderList() {
-  listArea.innerHTML = "";
+itemFilterSelect.addEventListener("change", () => {
+  renderRecordsGallery();
+});
 
-  let filtered = [...records];
-
-  if (yarnFilter.value !== "ALL") {
-    filtered = filtered.filter((r) => r.yarnName === yarnFilter.value);
-  }
-  if (itemFilter.value !== "ALL") {
-    filtered = filtered.filter((r) => r.itemType === itemFilter.value);
-  }
-
-  if (filtered.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "empty-state";
-    empty.textContent = "まだ記録がありません🧶";
-    listArea.appendChild(empty);
+// 作品保存
+saveRecordBtn.addEventListener("click", async () => {
+  if (!currentUser) {
+    alert("ログインしてください。");
     return;
   }
 
-  filtered.forEach((r) => {
+  const itemType = itemTypeInput.value.trim();
+  const yarnName = yarnNameInput.value.trim();
+  const ballsUsed = parseFloat(ballsUsedInput.value);
+  const needleSize = needleSizeInput.value.trim();
+  const startDate = startDateInput.value || null;
+  const endDate = endDateInput.value || null;
+  const memo = memoInput.value.trim();
+  const photoFile = photoInput.files[0] || null;
+
+  if (!itemType && !yarnName && !memo && !photoFile) {
+    alert("少なくとも何か1つは入力してください（アイテム名・毛糸名・メモ・写真など）。");
+    return;
+  }
+
+  saveRecordBtn.disabled = true;
+  saveRecordBtn.textContent = "保存中...";
+
+  try {
+    const photoData = await readFileAsDataUrl(photoFile);
+
+    const payload = {
+      userId: currentUser.uid,
+      itemType,
+      yarnName,
+      ballsUsed: isNaN(ballsUsed) ? null : ballsUsed,
+      needleSize,
+      startDate,
+      endDate,
+      memo,
+      photoData: photoData || null,
+      createdAt: serverTimestamp(),
+    };
+
+    await addDoc(collection(db, "records"), payload);
+
+    // フォームリセット
+    itemTypeInput.value = "";
+    yarnNameInput.value = "";
+    ballsUsedInput.value = "";
+    needleSizeInput.value = "";
+    startDateInput.value = "";
+    endDateInput.value = "";
+    memoInput.value = "";
+    photoInput.value = "";
+
+    // 再読み込み
+    await loadUserRecords(currentUser.uid);
+    alert("作品を保存しました。");
+  } catch (err) {
+    console.error(err);
+    alert("作品の保存に失敗しました。");
+  } finally {
+    saveRecordBtn.disabled = false;
+    saveRecordBtn.textContent = "作品を保存";
+  }
+});
+
+// ==============================
+// 8. Firestore: 毛糸（yarns）
+// ==============================
+
+// 自分の毛糸を読み込み
+async function loadUserYarns(uid) {
+  userYarns = [];
+  const q = query(collection(db, "yarns"), where("userId", "==", uid));
+  const snap = await getDocs(q);
+  snap.forEach(docSnap => {
+    userYarns.push({
+      id: docSnap.id,
+      ...docSnap.data(),
+    });
+  });
+
+  // 名前順に並べる
+  userYarns.sort((a, b) => safeText(a.yarnName).localeCompare(safeText(b.yarnName), "ja"));
+  renderYarnTable();
+}
+
+function renderYarnTable() {
+  yarnTableBody.innerHTML = "";
+  let filtered = userYarns.slice();
+
+  const nameFilter = yarnNameFilterInput.value.trim().toLowerCase();
+  const colorFilter = colorCategoryFilterSelect.value;
+
+  if (nameFilter) {
+    filtered = filtered.filter(y =>
+      safeText(y.yarnName).toLowerCase().includes(nameFilter)
+    );
+  }
+  if (colorFilter && colorFilter !== "ALL") {
+    filtered = filtered.filter(y => safeText(y.colorCategory) === colorFilter);
+  }
+
+  if (!filtered.length) {
+    setHidden(yarnEmpty, false);
+  } else {
+    setHidden(yarnEmpty, true);
+  }
+
+  filtered.forEach(yarn => {
+    const tr = document.createElement("tr");
+
+    // 毛糸名（クリックでギャラリー）
+    const tdName = document.createElement("td");
+    const btn = document.createElement("button");
+    btn.className = "yarn-link-btn";
+    btn.textContent = yarn.yarnName || "(名称未設定)";
+    btn.addEventListener("click", () => {
+      openYarnModal(yarn);
+    });
+    tdName.appendChild(btn);
+
+    // カラーカテゴリ
+    const tdColorCate = document.createElement("td");
+    tdColorCate.textContent = yarn.colorCategory || "";
+
+    // カラーメモ
+    const tdColorMemo = document.createElement("td");
+    tdColorMemo.textContent = yarn.colorMemo || "";
+
+    // 在庫
+    const tdStock = document.createElement("td");
+    tdStock.textContent = (yarn.stock ?? "") + (yarn.stock != null ? " 玉" : "");
+
+    // 操作列は今のところなし
+    const tdActions = document.createElement("td");
+
+    tr.appendChild(tdName);
+    tr.appendChild(tdColorCate);
+    tr.appendChild(tdColorMemo);
+    tr.appendChild(tdStock);
+    tr.appendChild(tdActions);
+
+    yarnTableBody.appendChild(tr);
+  });
+}
+
+// 毛糸登録 / 更新
+addYarnBtn.addEventListener("click", async () => {
+  if (!currentUser) {
+    alert("ログインしてください。");
+    return;
+  }
+
+  const yarnName = yarnMasterNameInput.value.trim();
+  const colorCategory = yarnColorCategoryInput.value || "";
+  const colorMemo = yarnColorMemoInput.value.trim();
+  const stockRaw = yarnStockInput.value;
+  const stock = stockRaw === "" ? null : Number(stockRaw);
+
+  if (!yarnName) {
+    alert("毛糸名を入力してください。");
+    return;
+  }
+
+  const docId = `${currentUser.uid}_${yarnName}`;
+
+  const data = {
+    userId: currentUser.uid,
+    yarnName,
+    colorCategory,
+    colorMemo,
+    stock,
+    updatedAt: serverTimestamp(),
+  };
+
+  try {
+    await setDoc(doc(db, "yarns", docId), data, { merge: true });
+
+    // 入力をそのまま残しておくか、クリアするかは好みだが、とりあえず毛糸名以外はクリア
+    yarnColorCategoryInput.value = "";
+    yarnColorMemoInput.value = "";
+    yarnStockInput.value = "";
+
+    await loadUserYarns(currentUser.uid);
+    alert("毛糸を登録 / 更新しました。");
+  } catch (err) {
+    console.error(err);
+    alert("毛糸の登録に失敗しました。");
+  }
+});
+
+yarnNameFilterInput.addEventListener("input", () => {
+  renderYarnTable();
+});
+colorCategoryFilterSelect.addEventListener("change", () => {
+  renderYarnTable();
+});
+
+// ==============================
+// 9. 毛糸ギャラリーモーダル
+// ==============================
+
+async function openYarnModal(yarn) {
+  if (!currentUser) return;
+
+  yarnModalTitle.textContent = yarn.yarnName || "(名称未設定)";
+  yarnModalColorBadge.textContent = yarn.colorCategory || "";
+  yarnModalInfo.textContent = yarn.colorMemo ? `メモ：${yarn.colorMemo}` : "";
+
+  yarnMyGallery.innerHTML = "";
+  yarnOthersGallery.innerHTML = "";
+  setHidden(yarnMyEmpty, true);
+  setHidden(yarnOthersEmpty, true);
+
+  setHidden(yarnModal, false);
+
+  try {
+    // この毛糸名を使っている全レコードを取得
+    const q = query(collection(db, "records"), where("yarnName", "==", yarn.yarnName));
+    const snap = await getDocs(q);
+
+    const myList = [];
+    const othersList = [];
+
+    snap.forEach(docSnap => {
+      const data = {
+        id: docSnap.id,
+        ...docSnap.data(),
+      };
+      if (data.userId === currentUser.uid) {
+        myList.push(data);
+      } else {
+        othersList.push(data);
+      }
+    });
+
+    myList.sort((a, b) => getCreatedAtMs(b) - getCreatedAtMs(a));
+    othersList.sort((a, b) => getCreatedAtMs(b) - getCreatedAtMs(a));
+
+    renderYarnModalList(yarnMyGallery, yarnMyEmpty, myList);
+    renderYarnModalList(yarnOthersGallery, yarnOthersEmpty, othersList);
+  } catch (err) {
+    console.error(err);
+    alert("毛糸ギャラリーの読み込みに失敗しました。");
+  }
+}
+
+function renderYarnModalList(container, emptyEl, list) {
+  container.innerHTML = "";
+  if (!list.length) {
+    setHidden(emptyEl, false);
+    return;
+  }
+  setHidden(emptyEl, true);
+
+  list.forEach(record => {
     const card = document.createElement("div");
-    card.className = "entry-card";
+    card.className = "thumb-card";
 
-    card.innerHTML = `
-      <strong>${escapeHtml(r.itemType || "作品名")}</strong>
-      <div class="entry-meta">
-        ${escapeHtml(r.yarnName || "毛糸名未入力")} 
-        ${r.colorNumber ? `（色：${escapeHtml(r.colorNumber)}）` : ""}
-        ${formatDateRange(r.startDate, r.endDate)}
-        ${r.workHours ? ` / ${r.workHours}時間` : ""}
-      </div>
-      <div class="entry-body">
-        ${r.ballsUsed != null ? `<div><span class="label">玉数：</span>${r.ballsUsed}玉</div>` : ""}
-        ${r.needleSize ? `<div><span class="label">針：</span>${escapeHtml(r.needleSize)}</div>` : ""}
-        ${r.purchasePlace ? `<div><span class="label">購入先：</span>${escapeHtml(r.purchasePlace)}</div>` : ""}
-        ${r.memo ? `<div><span class="label">メモ：</span>${escapeHtml(r.memo)}</div>` : ""}
-      </div>
-    `;
-
-    if (r.photoData) {
+    if (record.photoData) {
       const img = document.createElement("img");
-      img.src = r.photoData;
-      img.className = "entry-photo";
+      img.src = record.photoData;
+      img.className = "thumb-photo";
       card.appendChild(img);
+
+      const label = document.createElement("div");
+      label.className = "thumb-label";
+      label.textContent = record.itemType || "(アイテム未記入)";
+      card.appendChild(label);
+    } else {
+      const wrapper = document.createElement("div");
+      wrapper.className = "thumb-text";
+      const title = document.createElement("div");
+      title.className = "thumb-text-title";
+      title.textContent = record.itemType || "(アイテム未記入)";
+      const body = document.createElement("div");
+      body.className = "thumb-text-body";
+      body.textContent = record.memo || "";
+      wrapper.appendChild(title);
+      wrapper.appendChild(body);
+      card.appendChild(wrapper);
     }
 
-    const actions = document.createElement("div");
-    actions.className = "entry-actions";
-
-    const editBtn = document.createElement("button");
-    editBtn.className = "btn btn-edit";
-    editBtn.textContent = "Edit";
-    editBtn.onclick = () => startEdit(r.id);
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "btn btn-delete";
-    deleteBtn.textContent = "Delete";
-    deleteBtn.onclick = () => deleteRecord(r.id);
-
-    actions.appendChild(editBtn);
-    actions.appendChild(deleteBtn);
-    card.appendChild(actions);
-
-    listArea.appendChild(card);
+    container.appendChild(card);
   });
 }
 
-// 編集
-function startEdit(id) {
-  const r = records.find((x) => x.id === id);
-  if (!r) return;
+closeYarnModalBtn.addEventListener("click", () => {
+  setHidden(yarnModal, true);
+});
+yarnModal.addEventListener("click", (e) => {
+  if (e.target === yarnModal) {
+    setHidden(yarnModal, true);
+  }
+});
 
-  editingId = id;
-  yarnNameInput.value = r.yarnName || "";
-  colorNumberInput.value = r.colorNumber || "";
-  itemTypeInput.value = r.itemType || "";
-  ballsUsedInput.value = r.ballsUsed || "";
-  needleSizeInput.value = r.needleSize || "";
-  purchasePlaceInput.value = r.purchasePlace || "";
-  workHoursInput.value = r.workHours || "";
-  startDateInput.value = r.startDate || "";
-  endDateInput.value = r.endDate || "";
-  memoInput.value = r.memo || "";
+// ==============================
+// 10. 検索（みんなの投稿）
+// ==============================
 
-  saveButton.textContent = "Update";
-  window.scrollTo(0, 0);
+async function searchRecords() {
+  const queryText = searchQueryInput.value.trim().toLowerCase();
+  if (!queryText) {
+    alert("検索したいキーワードを入力してください。");
+    return;
+  }
+
+  const searchType = document.querySelector('input[name="searchType"]:checked')?.value || "item";
+
+  searchBtn.disabled = true;
+  searchBtn.textContent = "検索中...";
+
+  searchResultGallery.innerHTML = "";
+  searchResultCount.textContent = "";
+  setHidden(searchEmpty, true);
+
+  try {
+    // ※ 本格運用では条件付きクエリ＋インデックスが必要だけど、
+    //   ここではサンプルとして「最新200件」を取得してローカルでフィルタする。
+    const q = query(collection(db, "records"), limit(200));
+    const snap = await getDocs(q);
+
+    const matched = [];
+    snap.forEach(docSnap => {
+      const data = {
+        id: docSnap.id,
+        ...docSnap.data(),
+      };
+
+      // ※ 公開フラグ isPublic をつけたらここでチェックする想定
+      const field = (searchType === "item" ? data.itemType : data.yarnName) || "";
+      if (field.toLowerCase().includes(queryText)) {
+        matched.push(data);
+      }
+    });
+
+    matched.sort((a, b) => getCreatedAtMs(b) - getCreatedAtMs(a));
+
+    if (!matched.length) {
+      setHidden(searchEmpty, false);
+      searchResultCount.textContent = "0件";
+      return;
+    }
+
+    searchResultCount.textContent = `${matched.length}件`;
+
+    matched.forEach(record => {
+      const card = document.createElement("div");
+      card.className = "thumb-card";
+
+      if (record.photoData) {
+        const img = document.createElement("img");
+        img.src = record.photoData;
+        img.className = "thumb-photo";
+        card.appendChild(img);
+
+        const label = document.createElement("div");
+        label.className = "thumb-label";
+        const item = record.itemType || "(アイテム)";
+        const yarn = record.yarnName || "";
+        label.textContent = yarn ? `${item} / ${yarn}` : item;
+        card.appendChild(label);
+      } else {
+        const wrapper = document.createElement("div");
+        wrapper.className = "thumb-text";
+        const title = document.createElement("div");
+        title.className = "thumb-text-title";
+        title.textContent = record.itemType || "(アイテム未記入)";
+        const body = document.createElement("div");
+        body.className = "thumb-text-body";
+        body.textContent = record.memo || "";
+        wrapper.appendChild(title);
+        wrapper.appendChild(body);
+        card.appendChild(wrapper);
+      }
+
+      searchResultGallery.appendChild(card);
+    });
+  } catch (err) {
+    console.error(err);
+    alert("検索に失敗しました。");
+  } finally {
+    searchBtn.disabled = false;
+    searchBtn.textContent = "検索";
+  }
 }
 
-// 削除
-async function deleteRecord(id) {
-  if (!confirm("この記録を削除しますか？")) return;
+searchBtn.addEventListener("click", () => {
+  searchRecords();
+});
 
-  await deleteRecordFromDB(id);
+// Enterキーでの検索
+searchQueryInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    searchRecords();
+  }
+});
 
-  records = records.filter((r) => r.id !== id);
-  renderFilters();
-  renderList();
-}
+// ==============================
+// 11. ナビタブ切り替え
+// ==============================
 
-// フィルター更新
-function renderFilters() {
-  const yarnSet = new Set();
-  const itemSet = new Set();
+navTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    navTabs.forEach(t => t.classList.remove("nav-tab-active"));
+    tab.classList.add("nav-tab-active");
 
-  records.forEach((r) => {
-    if (r.yarnName) yarnSet.add(r.yarnName);
-    if (r.itemType) itemSet.add(r.itemType);
+    const view = tab.dataset.view;
+    if (view === "mypage") {
+      setHidden(myPageView, false);
+      setHidden(searchView, true);
+    } else if (view === "search") {
+      setHidden(myPageView, true);
+      setHidden(searchView, false);
+    }
   });
+});
 
-  // 毛糸フィルタ
-  const currentYarn = yarnFilter.value;
-  yarnFilter.innerHTML = '<option value="ALL">すべて</option>';
-  [...yarnSet].forEach((y) => {
-    yarnFilter.innerHTML += `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`;
-  });
-  yarnFilter.value = currentYarn || "ALL";
+// ==============================
+// 12. onAuthStateChanged で初期ロード
+// ==============================
 
-  // 作品フィルタ
-  const currentItem = itemFilter.value;
-  itemFilter.innerHTML = '<option value="ALL">すべて</option>';
-  [...itemSet].forEach((y) => {
-    itemFilter.innerHTML += `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`;
-  });
-  itemFilter.value = currentItem || "ALL";
-}
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user || null;
+  renderHeaderUser(currentUser);
+  updateAuthView(currentUser);
 
-// 日付範囲
-function formatDateRange(start, end) {
-  if (start && end) return ` / ${start}〜${end}`;
-  if (start) return ` / ${start}〜`;
-  if (end) return ` / 〜${end}`;
-  return "";
-}
+  if (!currentUser) {
+    return;
+  }
 
-// HTMLエスケープ
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+  try {
+    // プロフィール・作品・毛糸 全部読む
+    await loadUserProfile(currentUser.uid);
+    await loadUserRecords(currentUser.uid);
+    await loadUserYarns(currentUser.uid);
+  } catch (err) {
+    console.error(err);
+    alert("データの読み込み中にエラーが発生しました。");
+  }
+});
