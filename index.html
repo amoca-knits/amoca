@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Amoca knit note</title>
 
   <style>
@@ -22,7 +22,7 @@
 
     body {
       margin: 0;
-      padding: 24px;
+      padding: 16px;
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "YuGothic", "游ゴシック体", sans-serif;
       background: radial-gradient(circle at top left, #ffe4f0 0, #fdf7ff 40%, #f2f5ff 100%);
       display: flex;
@@ -32,130 +32,83 @@
 
     .app {
       width: 100%;
-      max-width: 900px;
+      max-width: 980px;
       background: var(--card-bg);
-      border-radius: 20px;
-      padding: 20px 20px 28px;
+      border-radius: 22px;
+      padding: 18px 18px 24px;
       box-shadow:
         0 18px 45px rgba(122, 87, 178, 0.18),
         0 0 0 1px rgba(180, 140, 227, 0.08);
     }
 
-    .app-header {
-      margin-bottom: 18px;
+    header.app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       border-bottom: 1px solid rgba(180, 140, 227, 0.25);
-      padding-bottom: 12px;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #e09fff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
     }
 
     h1 {
       margin: 0;
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       letter-spacing: 0.04em;
       color: var(--accent);
     }
 
     .subtitle {
-      margin: 6px 0 0;
-      font-size: 0.9rem;
+      margin: 2px 0 0;
+      font-size: 0.8rem;
       color: var(--text-muted);
     }
 
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
-      gap: 16px;
-    }
-
-    @media (max-width: 780px) {
-      .layout {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    h2 {
-      font-size: 1rem;
-      margin: 0 0 10px;
+    .user-mini {
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-
-    h2::before {
-      content: "";
-      width: 6px;
-      height: 18px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, var(--accent), var(--accent-soft));
-      display: inline-block;
-    }
-
-    .card {
-      background: #faf7ff;
-      border-radius: 16px;
-      padding: 14px 14px 16px;
-      border: 1px solid rgba(180, 140, 227, 0.16);
-    }
-
-    .form-grid label {
-      display: block;
-      font-size: 0.82rem;
-      margin-bottom: 8px;
-      color: var(--text-main);
-    }
-
-    .form-grid input[type="text"],
-    .form-grid input[type="number"],
-    .form-grid input[type="date"],
-    .form-grid input[type="file"],
-    .form-grid textarea {
-      width: 100%;
-      margin-top: 3px;
-      padding: 6px 8px;
-      border-radius: 9px;
-      border: 1px solid rgba(180, 140, 227, 0.5);
-      font-size: 0.85rem;
-      outline: none;
-      background: #ffffff;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .form-grid input[type="file"] {
-      padding: 4px;
-      background: #ffffff;
-    }
-
-    .form-grid textarea {
-      min-height: 70px;
-      resize: vertical;
-    }
-
-    .form-grid input:focus,
-    .form-grid textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(180, 140, 227, 0.25);
-    }
-
-    .field-group-inline {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
     }
 
-    .field-group-inline label {
-      margin-bottom: 0;
-    }
-
-    .form-actions {
-      margin-top: 10px;
+    .avatar-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-soft);
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 600;
     }
 
     .btn {
       border: none;
       border-radius: 999px;
       padding: 6px 14px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
       transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
       display: inline-flex;
@@ -175,266 +128,777 @@
       box-shadow: 0 6px 14px rgba(180, 140, 227, 0.55);
     }
 
-    .btn-primary:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(180, 140, 227, 0.4);
-    }
-
-    .list-area {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 420px;
-      overflow-y: auto;
-      padding-right: 2px;
-    }
-
-    .entry-card {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 10px 10px 8px;
-      border: 1px solid rgba(180, 140, 227, 0.25);
-      box-shadow: 0 4px 10px rgba(122, 87, 178, 0.08);
-      font-size: 0.86rem;
-    }
-
-    .entry-card strong {
-      font-size: 0.9rem;
-    }
-
-    .entry-meta {
-      margin-top: 4px;
-      color: var(--text-muted);
-      font-size: 0.78rem;
-    }
-
-    .entry-body {
-      margin-top: 4px;
-    }
-
-    .entry-body span.label {
-      color: var(--text-muted);
-      font-size: 0.78rem;
-      margin-right: 4px;
-    }
-
-    .entry-photo {
-      margin-top: 6px;
-      border-radius: 12px;
-      max-width: 180px;
-      height: auto;
-      display: block;
-    }
-
-    .entry-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 6px;
-      margin-top: 6px;
-    }
-
-    .btn-edit {
+    .btn-secondary {
       background: #f1e6ff;
       color: #5b3f91;
     }
 
-    .btn-edit:hover {
-      background: #e3d3ff;
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(180, 140, 227, 0.5);
+      color: var(--accent);
     }
 
-    .btn-delete {
+    .btn-danger {
       background: #ffe3e3;
       color: #a93333;
     }
 
-    .btn-delete:hover {
-      background: #ffd1d1;
+    main {
+      margin-top: 10px;
     }
 
-    .empty-state {
+    .card {
+      background: #faf7ff;
+      border-radius: 16px;
+      padding: 14px 14px 16px;
+      border: 1px solid rgba(180, 140, 227, 0.16);
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 1rem;
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h2::before {
+      content: "";
+      width: 6px;
+      height: 18px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-soft));
+      display: inline-block;
+    }
+
+    .form-grid label {
+      display: block;
+      font-size: 0.82rem;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .form-grid input[type="text"],
+    .form-grid input[type="email"],
+    .form-grid input[type="password"],
+    .form-grid input[type="number"],
+    .form-grid input[type="date"],
+    .form-grid input[type="file"],
+    .form-grid textarea,
+    .form-grid select {
+      width: 100%;
+      margin-top: 3px;
+      padding: 6px 8px;
+      border-radius: 9px;
+      border: 1px solid rgba(180, 140, 227, 0.5);
+      font-size: 0.85rem;
+      outline: none;
+      background: #ffffff;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-grid textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .form-grid input:focus,
+    .form-grid textarea:focus,
+    .form-grid select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(180, 140, 227, 0.25);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .form-actions {
+      margin-top: 8px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .nav-tabs {
+      display: inline-flex;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 999px;
+      background: #f4ecff;
+      margin-bottom: 8px;
+    }
+
+    .nav-tab {
+      border-radius: 999px;
+      border: none;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .nav-tab-active {
+      background: #ffffff;
+      color: var(--accent);
+      box-shadow: 0 2px 6px rgba(180, 140, 227, 0.35);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 780px) {
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+      body {
+        padding: 10px;
+      }
+      .app {
+        padding: 14px;
+      }
+    }
+
+    .profile-header {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .profile-main {
+      flex: 1;
+    }
+
+    .profile-bio {
       font-size: 0.8rem;
       color: var(--text-muted);
-      padding: 4px 2px;
+      margin-top: 4px;
+      white-space: pre-wrap;
     }
 
-    /* 絞り込みバー */
-    .filter-bar {
+    .profile-links {
+      margin-top: 6px;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 8px;
-      font-size: 0.8rem;
+      gap: 6px;
     }
 
-    .filter-field label {
+    .link-pill {
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f1e6ff;
+      color: #5b3f91;
+      text-decoration: none;
+    }
+
+    .info-text {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 8px;
+    }
+
+    .thumb-card {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #f2eaff;
+      cursor: pointer;
+      border: 1px solid transparent;
+      min-height: 90px;
       display: flex;
-      align-items: center;
+      align-items: stretch;
+      justify-content: stretch;
+    }
+
+    .thumb-card:hover {
+      border-color: rgba(180, 140, 227, 0.8);
+    }
+
+    .thumb-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .thumb-label {
+      position: absolute;
+      left: 6px;
+      bottom: 6px;
+      right: 6px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .thumb-text {
+      padding: 8px 9px;
+      font-size: 0.78rem;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       gap: 4px;
     }
 
-    .filter-select {
-      padding: 4px 8px;
+    .thumb-text-title {
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .thumb-text-body {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+      max-height: 3.2em;
+      overflow: hidden;
+    }
+
+    .section-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+    }
+
+    .filter-row select,
+    .filter-row input[type="text"] {
+      padding: 3px 8px;
       border-radius: 999px;
       border: 1px solid rgba(180, 140, 227, 0.6);
       font-size: 0.78rem;
       background: #fff;
     }
 
-/* ▼▼ スマホ最適化（幅600px以下）▼▼ */
-@media (max-width: 600px) {
+    .empty-state {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 4px 2px;
+    }
 
-  body {
-    padding: 12px;
-  }
+    /* Yarn list table風 */
+    .yarn-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
 
-  .app {
-    padding: 14px;
-    border-radius: 16px;
-  }
+    .yarn-table th,
+    .yarn-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid rgba(180, 140, 227, 0.2);
+    }
 
-  .layout {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
+    .yarn-table th {
+      text-align: left;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 0.76rem;
+    }
 
-  h1 {
-    font-size: 1.3rem;
-  }
+    .yarn-link-btn {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.78rem;
+      text-decoration: underline;
+    }
 
-  .subtitle {
-    font-size: 0.78rem;
-  }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: #f1e6ff;
+      font-size: 0.7rem;
+      margin-right: 4px;
+    }
 
-  .entry-card {
-    padding: 10px;
-  }
+    /* Yarn gallery modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+    }
 
-  .entry-photo {
-    max-width: 100%;
-  }
+    .modal-panel {
+      width: 100%;
+      max-width: 720px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px 14px 18px;
+      box-shadow: 0 18px 45px rgba(40, 25, 85, 0.45);
+    }
 
-  .filter-bar {
-    flex-direction: column;
-    gap: 6px;
-    align-items: flex-start;
-  }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
 
-  .filter-select {
-    width: 100%;
-  }
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
 
-  .form-grid input,
-  .form-grid textarea,
-  .form-grid select {
-    font-size: 0.9rem;
-  }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #f1e6ff;
+      font-size: 0.7rem;
+      color: #5b3f91;
+      margin-left: 4px;
+    }
 
-  .btn {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-  }
+    /* Auth view */
+    .auth-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
+      gap: 12px;
+    }
 
-  .form-card {
-    padding: 12px;
-  }
-}
+    @media (max-width: 780px) {
+      .auth-layout {
+        grid-template-columns: 1fr;
+      }
+    }
 
+    .auth-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
 
+    .auth-switch {
+      margin-top: 6px;
+      font-size: 0.78rem;
+    }
+
+    .link-text-button {
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* Search view */
+    .search-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 0.78rem;
+    }
+
+    .search-bar input[type="text"] {
+      flex: 1;
+      min-width: 150px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(180, 140, 227, 0.6);
+      font-size: 0.8rem;
+      background: #fff;
+    }
+
+    .radio-group {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .radio-group label {
+      font-size: 0.78rem;
+    }
+
+    .pill-label {
+      background: #f4ecff;
+      border-radius: 999px;
+      padding: 1px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .small-muted {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
   <div class="app">
     <header class="app-header">
-      <h1>Amoca knit note</h1>
-      <p class="subtitle">毛糸・作品・写真をまとめて記録する、あなただけの編み物ノート</p>
+      <div class="logo-wrap">
+        <div class="logo-mark">A</div>
+        <div>
+          <h1>Amoca knit note</h1>
+          <p class="subtitle">編んだもの・毛糸・アイデアをまとめて残す、あなただけの編みログ</p>
+        </div>
+      </div>
+      <div class="user-mini" id="headerUserArea">
+        <!-- JSでログイン状態に応じて切り替え -->
+      </div>
     </header>
 
-    <main class="layout">
-      <section class="card form-card">
-        <h2>新しい記録</h2>
-        <div class="form-grid">
-          <label>毛糸の名前：
-            <input id="yarnName" type="text">
-          </label>
-
-          <label>色番：
-            <input id="colorNumber" type="text">
-          </label>
-
-          <label>編んだもの：
-            <input id="itemType" type="text">
-          </label>
-
-          <div class="field-group-inline">
-            <label>使った玉数：
-              <input id="ballsUsed" type="number" step="0.5">
-            </label>
-            <label>針サイズ：
-              <input id="needleSize" type="text">
-            </label>
+    <main>
+      <!-- 未ログイン or サインイン画面 -->
+      <section id="authView" class="card">
+        <div class="auth-layout">
+          <div>
+            <h2>ログイン / 新規登録</h2>
+            <div class="form-grid">
+              <label>メールアドレス：
+                <input id="authEmail" type="email" autocomplete="email" />
+              </label>
+              <label>パスワード：
+                <input id="authPassword" type="password" autocomplete="current-password" />
+              </label>
+            </div>
+            <div class="form-actions">
+              <button id="emailSignInBtn" class="btn btn-primary">メールでログイン</button>
+              <button id="emailSignUpBtn" class="btn btn-secondary">メールで新規登録</button>
+            </div>
+            <div class="form-actions">
+              <button id="googleSignInBtn" class="btn btn-outline">Googleでログイン</button>
+            </div>
+            <p class="auth-note">
+              ログインすると、作品メモ・毛糸在庫・マイページがクラウドに保存されます🧶<br />
+              機種変更してもログインすれば続きから使えます。
+            </p>
           </div>
-
-          <label>購入先：
-            <input id="purchasePlace" type="text" placeholder="例：ユザワヤ オンライン">
-          </label>
-
-          <label>作業時間（時間）：
-            <input id="workHours" type="number" step="0.1">
-          </label>
-
-          <div class="field-group-inline">
-            <label>編み始めた日：
-              <input id="startDate" type="date">
-            </label>
-            <label>編み終えた日：
-              <input id="endDate" type="date">
-            </label>
-          </div>
-
-          <label>写真：
-            <input id="photo" type="file" accept="image/*">
-          </label>
-
-          <label>メモ：
-            <textarea id="memo"></textarea>
-          </label>
-
-          <div class="form-actions">
-            <button id="saveButton" class="btn btn-primary">Save</button>
+          <div>
+            <h2>Amocaについて</h2>
+            <p class="auth-note">
+              Amoca は、編み物の記録に特化した小さなWebアプリです。<br />
+              ・作品写真とメモを一緒に保存<br />
+              ・毛糸ごとの在庫・カラー管理<br />
+              ・マイページで作品ギャラリー公開（将来的に🌱）<br />
+              ・同じ毛糸を使った他の人の作品も見られるようにしていきます。
+            </p>
           </div>
         </div>
       </section>
 
-      <section class="card list-card">
-        <h2>記録一覧</h2>
-
-        <div class="filter-bar">
-          <div class="filter-field">
-            <label>
-              毛糸で絞り込み：
-              <select id="yarnFilter" class="filter-select">
-                <option value="ALL">すべて</option>
-              </select>
-            </label>
+      <!-- ログイン後のナビ -->
+      <section id="appView" class="hidden">
+        <div class="section-header-row">
+          <div class="nav-tabs">
+            <button class="nav-tab nav-tab-active" data-view="mypage">マイページ</button>
+            <button class="nav-tab" data-view="search">検索</button>
           </div>
-          <div class="filter-field">
-            <label>
-              作品で絞り込み：
-              <select id="itemFilter" class="filter-select">
-                <option value="ALL">すべて</option>
-              </select>
-            </label>
-          </div>
+          <button id="logoutBtn" class="btn btn-outline btn-small">ログアウト</button>
         </div>
 
-        <div id="listArea" class="list-area">
-          <div class="empty-state">まだ記録がありません。左のフォームから最初の作品を追加してみてね🧶</div>
+        <!-- マイページビュー -->
+        <div id="myPageView">
+          <!-- プロフィール -->
+          <section class="card">
+            <h2>プロフィール</h2>
+            <div class="profile-header">
+              <div class="avatar-circle" id="profileAvatar">A</div>
+              <div class="profile-main">
+                <div class="form-grid">
+                  <label>ユーザー名：
+                    <input id="profileName" type="text" placeholder="例：Amoca by KAZUNE" />
+                  </label>
+                </div>
+                <div class="form-grid">
+                  <label>自己紹介（数行）：
+                    <textarea id="profileBio" placeholder="編み物歴、好きな毛糸、よく編むアイテムなどを書いても◎"></textarea>
+                  </label>
+                </div>
+                <div class="form-grid field-row">
+                  <label>リンク1タイトル：
+                    <input id="link1Label" type="text" placeholder="Instagram など" />
+                  </label>
+                  <label>リンク1 URL：
+                    <input id="link1Url" type="text" placeholder="https://..." />
+                  </label>
+                </div>
+                <div class="form-grid field-row">
+                  <label>リンク2タイトル：
+                    <input id="link2Label" type="text" />
+                  </label>
+                  <label>リンク2 URL：
+                    <input id="link2Url" type="text" />
+                  </label>
+                </div>
+                <div class="form-grid field-row">
+                  <label>リンク3タイトル：
+                    <input id="link3Label" type="text" />
+                  </label>
+                  <label>リンク3 URL：
+                    <input id="link3Url" type="text" />
+                  </label>
+                </div>
+                <div class="form-actions">
+                  <button id="saveProfileBtn" class="btn btn-primary">プロフィール保存</button>
+                </div>
+                <div class="profile-links" id="profileLinksPreview"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 作品フォーム + ギャラリー -->
+          <section class="two-column">
+            <!-- 左：作品追加 -->
+            <section class="card">
+              <h2>作品を追加</h2>
+              <div class="form-grid">
+                <label>編んだもの（アイテム名）：
+                  <input id="itemTypeInput" type="text" placeholder="ビーニー、マフラー など" />
+                </label>
+                <label>毛糸名：
+                  <input id="yarnNameInput" type="text" placeholder="メーカー・商品名" />
+                </label>
+                <div class="field-row">
+                  <label>使った玉数：
+                    <input id="ballsUsedInput" type="number" step="0.5" />
+                  </label>
+                  <label>針サイズ：
+                    <input id="needleSizeInput" type="text" placeholder="8号、10mm など" />
+                  </label>
+                </div>
+                <div class="field-row">
+                  <label>編み始め：
+                    <input id="startDateInput" type="date" />
+                  </label>
+                  <label>編み終え：
+                    <input id="endDateInput" type="date" />
+                  </label>
+                </div>
+                <label>写真：
+                  <input id="photoInput" type="file" accept="image/*" />
+                </label>
+                <label>メモ：
+                  <textarea id="memoInput" placeholder="編んでみた感想、サイズ、注意点など"></textarea>
+                </label>
+                <div class="form-actions">
+                  <button id="saveRecordBtn" class="btn btn-primary">作品を保存</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 右：作品ギャラリー -->
+            <section class="card">
+              <div class="section-header-row">
+                <h2>作品ギャラリー</h2>
+                <div class="filter-row">
+                  <span>アイテム：</span>
+                  <select id="itemFilterSelect">
+                    <option value="ALL">すべて</option>
+                  </select>
+                </div>
+              </div>
+              <div id="recordsGallery" class="gallery-grid">
+                <!-- JSで埋める -->
+              </div>
+              <div id="recordsEmpty" class="empty-state hidden">
+                まだ作品がありません。左のフォームから最初の作品を追加してみてね🧶
+              </div>
+            </section>
+          </section>
+
+          <!-- 毛糸一覧 -->
+          <section class="card">
+            <div class="section-header-row">
+              <h2>毛糸一覧</h2>
+              <div class="filter-row">
+                <span>毛糸：</span>
+                <input id="yarnNameFilter" type="text" placeholder="毛糸名で絞り込み" />
+                <span>カラー：</span>
+                <select id="colorCategoryFilter">
+                  <option value="ALL">すべて</option>
+                  <option>白系</option>
+                  <option>ベージュ系</option>
+                  <option>ブラウン系</option>
+                  <option>ピンク系</option>
+                  <option>赤系</option>
+                  <option>オレンジ系</option>
+                  <option>黄系</option>
+                  <option>緑系</option>
+                  <option>青系</option>
+                  <option>紫系</option>
+                  <option>グレー系</option>
+                  <option>黒系</option>
+                  <option>その他</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid field-row">
+              <label>毛糸名：
+                <input id="yarnMasterNameInput" type="text" placeholder="一覧に登録する毛糸名" />
+              </label>
+              <label>カラーカテゴリ：
+                <select id="yarnColorCategoryInput">
+                  <option value="">未選択</option>
+                  <option>白系</option>
+                  <option>ベージュ系</option>
+                  <option>ブラウン系</option>
+                  <option>ピンク系</option>
+                  <option>赤系</option>
+                  <option>オレンジ系</option>
+                  <option>黄系</option>
+                  <option>緑系</option>
+                  <option>青系</option>
+                  <option>紫系</option>
+                  <option>グレー系</option>
+                  <option>黒系</option>
+                  <option>その他</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-grid field-row">
+              <label>カラー自由入力（メモ）：
+                <input id="yarnColorMemoInput" type="text" placeholder="例：ダスティローズ、ライトキャメル など" />
+              </label>
+              <label>在庫数：
+                <input id="yarnStockInput" type="number" step="1" min="0" />
+              </label>
+            </div>
+            <div class="form-actions">
+              <button id="addYarnBtn" class="btn btn-secondary">毛糸を登録 / 更新</button>
+            </div>
+
+            <div id="yarnListWrapper">
+              <table class="yarn-table" id="yarnTable">
+                <thead>
+                  <tr>
+                    <th>毛糸名</th>
+                    <th>カラー</th>
+                    <th>メモ</th>
+                    <th>在庫</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="yarnTableBody">
+                  <!-- JSで埋める -->
+                </tbody>
+              </table>
+              <div id="yarnEmpty" class="empty-state hidden">
+                まだ毛糸が登録されていません。上のフォームから登録できます🧵
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- 検索ビュー -->
+        <div id="searchView" class="hidden">
+          <section class="card">
+            <h2>みんなの投稿を検索</h2>
+            <div class="search-bar">
+              <input id="searchQueryInput" type="text" placeholder="アイテム名 or 毛糸名で検索" />
+              <div class="radio-group">
+                <span class="pill-label">
+                  <input type="radio" name="searchType" value="item" id="searchTypeItem" checked />
+                  <label for="searchTypeItem">アイテム</label>
+                </span>
+                <span class="pill-label">
+                  <input type="radio" name="searchType" value="yarn" id="searchTypeYarn" />
+                  <label for="searchTypeYarn">毛糸名</label>
+                </span>
+              </div>
+              <button id="searchBtn" class="btn btn-primary">検索</button>
+            </div>
+            <p class="small-muted">
+              公開設定になっているユーザーの投稿のみ表示されます。（※公開・非公開機能はあとで実装していく想定）
+            </p>
+          </section>
+
+          <section class="card">
+            <div class="section-header-row">
+              <h2>検索結果</h2>
+              <span id="searchResultCount" class="small-muted"></span>
+            </div>
+            <div id="searchResultGallery" class="gallery-grid"></div>
+            <div id="searchEmpty" class="empty-state">
+              まだ検索していないか、該当する投稿がありません。
+            </div>
+          </section>
         </div>
       </section>
+
+      <!-- Yarn gallery modal -->
+      <div id="yarnModal" class="modal-backdrop hidden">
+        <div class="modal-panel">
+          <div class="modal-header">
+            <div>
+              <span class="modal-title" id="yarnModalTitle">毛糸名</span>
+              <span class="badge" id="yarnModalColorBadge"></span>
+            </div>
+            <button id="closeYarnModalBtn" class="btn btn-outline">閉じる</button>
+          </div>
+          <p class="info-text" id="yarnModalInfo"></p>
+
+          <h3 style="font-size:0.9rem;margin:8px 0 6px;">自分の作品</h3>
+          <div id="yarnMyGallery" class="gallery-grid"></div>
+          <div id="yarnMyEmpty" class="empty-state hidden">
+            この毛糸で登録している作品はまだありません。
+          </div>
+
+          <h3 style="font-size:0.9rem;margin:10px 0 6px;">他の人の作品</h3>
+          <div id="yarnOthersGallery" class="gallery-grid"></div>
+          <div id="yarnOthersEmpty" class="empty-state hidden">
+            他のユーザーの作品はまだありません。
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
-  <script src="main.js"></script>
+  <!-- Firebase連携などは main.js 側でまとめて扱う -->
+  <script type="module" src="./main.js"></script>
 </body>
 </html>
