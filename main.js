@@ -15,7 +15,7 @@ import {
   signOut,
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
-// --- 2. Firebase 設定（KAZUNE さんのプロジェクト） ---
+// --- 2. Firebase 設定 ---
 const firebaseConfig = {
   apiKey: "AIzaSyDWmywzWr1lCjuSi51IAA-TQY1abNUNwhw",
   authDomain: "amoca-61391.firebaseapp.com",
@@ -37,48 +37,48 @@ const googleProvider = new GoogleAuthProvider();
 
 // 画面ビュー
 const authView = document.getElementById("authView"); // ログインフォーム
-const appView = document.getElementById("appView");   // ログイン後ビュー
+const appView  = document.getElementById("appView");  // ログイン後
 
 // ヘッダー
 const userDisplayNameEl = document.getElementById("userDisplayName");
-const ownerNameEl = document.getElementById("ownerName");
-const signOutBtn = document.getElementById("signOutBtn");
+const ownerNameEl       = document.getElementById("ownerName");
+const signOutBtn        = document.getElementById("signOutBtn");
 
 // ログインフォーム
-const emailInput = document.getElementById("emailInput");
-const passwordInput = document.getElementById("passwordInput");
-const emailSignInBtn = document.getElementById("emailSignInBtn");
-const emailSignUpBtn = document.getElementById("emailSignUpBtn");
+const emailInput      = document.getElementById("emailInput");
+const passwordInput   = document.getElementById("passwordInput");
+const emailSignInBtn  = document.getElementById("emailSignInBtn");
+const emailSignUpBtn  = document.getElementById("emailSignUpBtn");
 const googleSignInBtn = document.getElementById("googleSignInBtn");
-const loginStatusEl = document.getElementById("loginStatus");
-const guestBtn = document.getElementById("guestBtn");
+const loginStatusEl   = document.getElementById("loginStatus");
+const guestBtn        = document.getElementById("guestBtn");
 
 // プロフィールフォーム
 const profileNameInput = document.getElementById("profileName");
-const profileBioInput = document.getElementById("profileBio");
-const link1TitleInput = document.getElementById("link1Title");
-const link1UrlInput = document.getElementById("link1Url");
-const link2TitleInput = document.getElementById("link2Title");
-const link2UrlInput = document.getElementById("link2Url");
-const link3TitleInput = document.getElementById("link3Title");
-const link3UrlInput = document.getElementById("link3Url");
-const profileSaveBtn = document.getElementById("profileSaveBtn");
+const profileBioInput  = document.getElementById("profileBio");
+const link1TitleInput  = document.getElementById("link1Title");
+const link1UrlInput    = document.getElementById("link1Url");
+const link2TitleInput  = document.getElementById("link2Title");
+const link2UrlInput    = document.getElementById("link2Url");
+const link3TitleInput  = document.getElementById("link3Title");
+const link3UrlInput    = document.getElementById("link3Url");
+const profileSaveBtn   = document.getElementById("profileSaveBtn");
 
 // 編み物ノートのフォーム
-const yarnNameInput = document.getElementById("yarnName");
-const colorNumberInput = document.getElementById("colorNumber");
-const itemTypeInput = document.getElementById("itemType");
-const ballsUsedInput = document.getElementById("ballsUsed");
-const needleSizeInput = document.getElementById("needleSize");
-const purchasePlaceInput = document.getElementById("purchasePlace");
-const workHoursInput = document.getElementById("workHours");
-const startDateInput = document.getElementById("startDate");
-const endDateInput = document.getElementById("endDate");
-const photoInput = document.getElementById("photo");
-const memoInput = document.getElementById("memo");
-const saveButton = document.getElementById("saveButton");
-const listArea = document.getElementById("listArea");
-const yarnListArea = document.getElementById("yarnListArea");
+const yarnNameInput       = document.getElementById("yarnName");
+const colorNumberInput    = document.getElementById("colorNumber");
+const itemTypeInput       = document.getElementById("itemType");
+const ballsUsedInput      = document.getElementById("ballsUsed");
+const needleSizeInput     = document.getElementById("needleSize");
+const purchasePlaceInput  = document.getElementById("purchasePlace");
+const workHoursInput      = document.getElementById("workHours");
+const startDateInput      = document.getElementById("startDate");
+const endDateInput        = document.getElementById("endDate");
+const photoInput          = document.getElementById("photo");
+const memoInput           = document.getElementById("memo");
+const saveButton          = document.getElementById("saveButton");
+const listArea            = document.getElementById("listArea");
+const yarnListArea        = document.getElementById("yarnListArea");
 
 // フィルター
 const yarnFilterSelect = document.getElementById("yarnFilter");
@@ -95,7 +95,7 @@ function profileKey(uid) {
 function applyOwnerName(profile, user) {
   const fallback =
     user?.displayName ||
-    (user?.email ? user.email.split("@")[0] : "あなた";
+    (user?.email ? user.email.split("@")[0] : "あなた");
 
   if (ownerNameEl) {
     ownerNameEl.textContent = profile?.name || fallback;
@@ -105,17 +105,17 @@ function applyOwnerName(profile, user) {
 function loadProfile(uid, user) {
   if (!uid) return;
   try {
-    const raw = localStorage.getItem(profileKey(uid));
+    const raw     = localStorage.getItem(profileKey(uid));
     const profile = raw ? JSON.parse(raw) : {};
 
     if (profileNameInput) profileNameInput.value = profile.name || "";
-    if (profileBioInput) profileBioInput.value = profile.bio || "";
-    if (link1TitleInput) link1TitleInput.value = profile.link1Title || "";
-    if (link1UrlInput) link1UrlInput.value = profile.link1Url || "";
-    if (link2TitleInput) link2TitleInput.value = profile.link2Title || "";
-    if (link2UrlInput) link2UrlInput.value = profile.link2Url || "";
-    if (link3TitleInput) link3TitleInput.value = profile.link3Title || "";
-    if (link3UrlInput) link3UrlInput.value = profile.link3Url || "";
+    if (profileBioInput)  profileBioInput.value  = profile.bio || "";
+    if (link1TitleInput)  link1TitleInput.value  = profile.link1Title || "";
+    if (link1UrlInput)    link1UrlInput.value    = profile.link1Url || "";
+    if (link2TitleInput)  link2TitleInput.value  = profile.link2Title || "";
+    if (link2UrlInput)    link2UrlInput.value    = profile.link2Url || "";
+    if (link3TitleInput)  link3TitleInput.value  = profile.link3Title || "";
+    if (link3UrlInput)    link3UrlInput.value    = profile.link3Url || "";
 
     applyOwnerName(profile, user);
   } catch (e) {
@@ -128,14 +128,14 @@ function saveProfile(uid, user) {
   if (!uid) return;
 
   const profile = {
-    name: profileNameInput?.value.trim() || "",
-    bio: profileBioInput?.value.trim() || "",
-    link1Title: link1TitleInput?.value.trim() || "",
-    link1Url: link1UrlInput?.value.trim() || "",
-    link2Title: link2TitleInput?.value.trim() || "",
-    link2Url: link2UrlInput?.value.trim() || "",
-    link3Title: link3TitleInput?.value.trim() || "",
-    link3Url: link3UrlInput?.value.trim() || "",
+    name:       profileNameInput?.value.trim() || "",
+    bio:        profileBioInput?.value.trim()  || "",
+    link1Title: link1TitleInput?.value.trim()  || "",
+    link1Url:   link1UrlInput?.value.trim()    || "",
+    link2Title: link2TitleInput?.value.trim()  || "",
+    link2Url:   link2UrlInput?.value.trim()    || "",
+    link3Title: link3TitleInput?.value.trim()  || "",
+    link3Url:   link3UrlInput?.value.trim()    || "",
   };
 
   try {
@@ -157,21 +157,21 @@ onAuthStateChanged(auth, (user) => {
     const name = user.displayName || user.email || "ゲスト";
     console.log("ログイン中：", name);
 
-    if (loginStatusEl) loginStatusEl.textContent = `ログイン中：${name}`;
+    if (loginStatusEl)    loginStatusEl.textContent    = `ログイン中：${name}`;
     if (userDisplayNameEl) userDisplayNameEl.textContent = name;
 
     if (authView) authView.style.display = "none";
-    if (appView) appView.style.display = "block";
+    if (appView)  appView.style.display  = "block";
 
     loadProfile(user.uid, user);
   } else {
     console.log("ログアウト状態です");
-    if (loginStatusEl) loginStatusEl.textContent = "ログインしていません";
+    if (loginStatusEl)    loginStatusEl.textContent    = "ログインしていません";
     if (userDisplayNameEl) userDisplayNameEl.textContent = "";
-    if (ownerNameEl) ownerNameEl.textContent = "ゲスト";
+    if (ownerNameEl)      ownerNameEl.textContent      = "ゲスト";
 
     if (authView) authView.style.display = "block";
-    if (appView) appView.style.display = "none";
+    if (appView)  appView.style.display  = "none";
   }
 });
 
@@ -208,7 +208,14 @@ function renderYarnList() {
 
   yarnListArea.innerHTML = "";
 
-  // ユニークな毛糸名を抽出
+  if (!records.length) {
+    const div = document.createElement("div");
+    div.className = "empty-state";
+    div.textContent = "まだ毛糸の記録がありません🧶";
+    yarnListArea.appendChild(div);
+    return;
+  }
+
   const yarnNames = Array.from(
     new Set(records.map((r) => r.yarnName).filter(Boolean))
   );
@@ -216,7 +223,7 @@ function renderYarnList() {
   if (!yarnNames.length) {
     const div = document.createElement("div");
     div.className = "empty-state";
-    div.textContent = "まだ毛糸の記録がありません🧶";
+    div.textContent = "毛糸名の入力された記録がまだありません🧶";
     yarnListArea.appendChild(div);
     return;
   }
@@ -229,7 +236,7 @@ function renderYarnList() {
   });
 }
 
-// 一覧を描画
+// 記録一覧を描画
 function renderRecords() {
   if (!listArea) return;
 
@@ -241,8 +248,6 @@ function renderRecords() {
     div.textContent =
       "まだ記録がありません。左のフォームから最初の作品を追加してみてね🧶";
     listArea.appendChild(div);
-    // フィルター＆毛糸一覧もリセット
-    updateFilterOptions();
     renderYarnList();
     return;
   }
@@ -261,15 +266,16 @@ function renderRecords() {
     card.className = "entry-card";
 
     const title = document.createElement("div");
-    title.innerHTML = `<strong>${rec.itemType || "作品"}</strong> / ${rec.yarnName || ""}`;
+    title.innerHTML =
+      `<strong>${rec.itemType || "作品"}</strong> / ${rec.yarnName || ""}`;
     card.appendChild(title);
 
     const meta = document.createElement("div");
     meta.className = "entry-meta";
     meta.textContent =
       (rec.colorNumber ? `色番: ${rec.colorNumber}  ` : "") +
-      (rec.workHours ? `作業時間: ${rec.workHours}h  ` : "") +
-      (rec.ballsUsed ? `玉数: ${rec.ballsUsed}` : "");
+      (rec.workHours  ? `作業時間: ${rec.workHours}h  ` : "") +
+      (rec.ballsUsed  ? `玉数: ${rec.ballsUsed}`      : "");
     card.appendChild(meta);
 
     if (rec.photoDataUrl) {
@@ -287,7 +293,6 @@ function renderRecords() {
       card.appendChild(memo);
     }
 
-    // 編集・削除ボタン
     const actions = document.createElement("div");
     actions.className = "entry-actions";
 
@@ -312,7 +317,6 @@ function renderRecords() {
     listArea.appendChild(card);
   });
 
-  // フィルターと毛糸一覧を更新
   updateFilterOptions();
   renderYarnList();
 }
@@ -353,16 +357,16 @@ function startEditRecord(id) {
 
   editingRecordId = id;
 
-  if (yarnNameInput) yarnNameInput.value = target.yarnName || "";
-  if (colorNumberInput) colorNumberInput.value = target.colorNumber || "";
-  if (itemTypeInput) itemTypeInput.value = target.itemType || "";
-  if (ballsUsedInput) ballsUsedInput.value = target.ballsUsed || "";
-  if (needleSizeInput) needleSizeInput.value = target.needleSize || "";
+  if (yarnNameInput)      yarnNameInput.value      = target.yarnName || "";
+  if (colorNumberInput)   colorNumberInput.value   = target.colorNumber || "";
+  if (itemTypeInput)      itemTypeInput.value      = target.itemType || "";
+  if (ballsUsedInput)     ballsUsedInput.value     = target.ballsUsed || "";
+  if (needleSizeInput)    needleSizeInput.value    = target.needleSize || "";
   if (purchasePlaceInput) purchasePlaceInput.value = target.purchasePlace || "";
-  if (workHoursInput) workHoursInput.value = target.workHours || "";
-  if (startDateInput) startDateInput.value = target.startDate || "";
-  if (endDateInput) endDateInput.value = target.endDate || "";
-  if (memoInput) memoInput.value = target.memo || "";
+  if (workHoursInput)     workHoursInput.value     = target.workHours || "";
+  if (startDateInput)     startDateInput.value     = target.startDate || "";
+  if (endDateInput)       endDateInput.value       = target.endDate || "";
+  if (memoInput)          memoInput.value          = target.memo || "";
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -385,16 +389,16 @@ function deleteRecord(id) {
 function handleSaveRecord() {
   if (!yarnNameInput || !itemTypeInput || !ballsUsedInput) return;
 
-  const yarnName = yarnNameInput.value.trim();
-  const colorNumber = colorNumberInput?.value.trim() || "";
-  const itemType = itemTypeInput.value.trim();
-  const ballsUsed = ballsUsedInput.value;
-  const needleSize = needleSizeInput?.value.trim() || "";
-  const purchasePlace = purchasePlaceInput?.value.trim() || "";
-  const workHours = workHoursInput?.value || "";
-  const startDate = startDateInput?.value || "";
-  const endDate = endDateInput?.value || "";
-  const memo = memoInput?.value.trim() || "";
+  const yarnName      = yarnNameInput.value.trim();
+  const colorNumber   = colorNumberInput?.value.trim()    || "";
+  const itemType      = itemTypeInput.value.trim();
+  const ballsUsed     = ballsUsedInput.value;
+  const needleSize    = needleSizeInput?.value.trim()     || "";
+  const purchasePlace = purchasePlaceInput?.value.trim()  || "";
+  const workHours     = workHoursInput?.value             || "";
+  const startDate     = startDateInput?.value             || "";
+  const endDate       = endDateInput?.value               || "";
+  const memo          = memoInput?.value.trim()           || "";
 
   if (!yarnName || !itemType) {
     alert("毛糸の名前と編んだものは入力してね🧶");
@@ -452,17 +456,17 @@ function handleSaveRecord() {
 
 // フォームのリセット
 function resetForm() {
-  if (yarnNameInput) yarnNameInput.value = "";
-  if (colorNumberInput) colorNumberInput.value = "";
-  if (itemTypeInput) itemTypeInput.value = "";
-  if (ballsUsedInput) ballsUsedInput.value = "";
-  if (needleSizeInput) needleSizeInput.value = "";
+  if (yarnNameInput)      yarnNameInput.value      = "";
+  if (colorNumberInput)   colorNumberInput.value   = "";
+  if (itemTypeInput)      itemTypeInput.value      = "";
+  if (ballsUsedInput)     ballsUsedInput.value     = "";
+  if (needleSizeInput)    needleSizeInput.value    = "";
   if (purchasePlaceInput) purchasePlaceInput.value = "";
-  if (workHoursInput) workHoursInput.value = "";
-  if (startDateInput) startDateInput.value = "";
-  if (endDateInput) endDateInput.value = "";
-  if (memoInput) memoInput.value = "";
-  if (photoInput) photoInput.value = "";
+  if (workHoursInput)     workHoursInput.value     = "";
+  if (startDateInput)     startDateInput.value     = "";
+  if (endDateInput)       endDateInput.value       = "";
+  if (memoInput)          memoInput.value          = "";
+  if (photoInput)         photoInput.value         = "";
 }
 
 // =============================
@@ -470,7 +474,7 @@ function resetForm() {
 // =============================
 
 function init() {
-  // --- 認証ボタン ---
+  // Google ログイン
   if (googleSignInBtn) {
     googleSignInBtn.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -484,12 +488,13 @@ function init() {
     });
   }
 
+  // メールログイン
   if (emailSignInBtn) {
     emailSignInBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       if (!emailInput || !passwordInput) return;
 
-      const email = emailInput.value.trim();
+      const email    = emailInput.value.trim();
       const password = passwordInput.value;
 
       if (!email || !password) {
@@ -507,12 +512,13 @@ function init() {
     });
   }
 
+  // メール新規登録
   if (emailSignUpBtn) {
     emailSignUpBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       if (!emailInput || !passwordInput) return;
 
-      const email = emailInput.value.trim();
+      const email    = emailInput.value.trim();
       const password = passwordInput.value;
 
       if (!email || !password) {
@@ -534,6 +540,7 @@ function init() {
     });
   }
 
+  // ログアウト
   if (signOutBtn) {
     signOutBtn.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -547,22 +554,18 @@ function init() {
     });
   }
 
-  // --- ゲストとして使ってみる（B案：ローカル専用モード） ---
+  // ゲストとして使ってみる（B案：ローカル専用）
   if (guestBtn) {
     guestBtn.addEventListener("click", (e) => {
       e.preventDefault();
 
       if (authView) authView.style.display = "none";
-      if (appView) appView.style.display = "block";
+      if (appView)  appView.style.display  = "block";
 
-      if (ownerNameEl) ownerNameEl.textContent = "ゲストさん";
+      if (ownerNameEl)       ownerNameEl.textContent       = "ゲストさん";
       if (userDisplayNameEl) userDisplayNameEl.textContent = "ゲストさん（ローカル保存）";
 
       console.log("ゲストモードで利用開始（ローカル保存のみ）");
-
-      // データ表示
-      loadRecords();
-      renderRecords();
     });
   }
 
