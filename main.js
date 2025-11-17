@@ -38,7 +38,7 @@ const googleProvider = new GoogleAuthProvider();
 // 画面ビュー
 const authView = document.getElementById("authView"); // ログインフォーム
 const appView = document.getElementById("appView");   // ログイン後
-
+const guestBtn = document.getElementById("guestBtn");
 // ヘッダー
 const userDisplayNameEl = document.getElementById("userDisplayName");
 const ownerNameEl = document.getElementById("ownerName");
@@ -77,6 +77,7 @@ const photoInput = document.getElementById("photo");
 const memoInput = document.getElementById("memo");
 const saveButton = document.getElementById("saveButton");
 const listArea = document.getElementById("listArea");
+const yarnListArea = document.getElementById("yarnListArea");
 
 // フィルター
 const yarnFilterSelect = document.getElementById("yarnFilter");
@@ -202,6 +203,38 @@ function saveRecords() {
 
 // 一覧を描画
 function renderRecords() {
+  // ... 記録一覧を描画する処理 ...
+  updateFilterOptions();
+  renderYarnList(); // ←最後にこれを追加するよ！
+}
+
+/* ←←← この位置に貼る！ */
+
+// 毛糸名の一覧を表示
+function renderYarnList() {
+  if (!yarnListArea) return;
+
+  yarnListArea.innerHTML = "";
+
+  const yarnNames = Array.from(
+    new Set(records.map((r) => r.yarnName).filter(Boolean))
+  );
+
+  if (!yarnNames.length) {
+    const div = document.createElement("div");
+    div.className = "empty-state";
+    div.textContent = "まだ毛糸の記録がありません🧶";
+    yarnListArea.appendChild(div);
+    return;
+  }
+
+  yarnNames.forEach((name) => {
+    const pill = document.createElement("div");
+    pill.className = "yarn-pill";
+    pill.textContent = name;
+    yarnListArea.appendChild(pill);
+  });
+}
   if (!listArea) return;
 
   listArea.innerHTML = "";
@@ -452,6 +485,22 @@ function init() {
         alert("Google ログインに失敗しました：\n" + (err.message || err.code));
       }
     });
+      // ゲストとして使う（B案）
+  if (guestBtn) {
+    guestBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      // ログインせずにそのままアプリ画面へ
+      if (authView) authView.style.display = "none";
+      if (appView) appView.style.display = "block";
+
+      if (ownerNameEl) ownerNameEl.textContent = "ゲスト";
+      if (userDisplayNameEl) userDisplayNameEl.textContent = "ゲスト";
+
+      // ローカルの記録を読み込んで表示
+      loadRecords();
+      renderRecords();
+    });
+  }
   }
 
   if (emailSignInBtn) {
