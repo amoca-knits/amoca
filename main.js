@@ -37,7 +37,8 @@ const googleProvider = new GoogleAuthProvider();
 
 // 画面ビュー
 const authView = document.getElementById("authView"); // ログインフォーム
-const appView = document.getElementById("appView");   // ログイン後
+const appView = document.getElementById("appView");   // ログイン後ビュー
+
 // ヘッダー
 const userDisplayNameEl = document.getElementById("userDisplayName");
 const ownerNameEl = document.getElementById("ownerName");
@@ -94,7 +95,7 @@ function profileKey(uid) {
 function applyOwnerName(profile, user) {
   const fallback =
     user?.displayName ||
-    (user?.email ? user.email.split("@")[0] : "あなた");
+    (user?.email ? user.email.split("@")[0] : "あなた";
 
   if (ownerNameEl) {
     ownerNameEl.textContent = profile?.name || fallback;
@@ -201,21 +202,13 @@ function saveRecords() {
   }
 }
 
-// 一覧を描画
-function renderRecords() {
-  // ... 記録一覧を描画する処理 ...
-  updateFilterOptions();
-  renderYarnList(); // ←最後にこれを追加するよ！
-}
-
-/* ←←← この位置に貼る！ */
-
 // 毛糸名の一覧を表示
 function renderYarnList() {
   if (!yarnListArea) return;
 
   yarnListArea.innerHTML = "";
 
+  // ユニークな毛糸名を抽出
   const yarnNames = Array.from(
     new Set(records.map((r) => r.yarnName).filter(Boolean))
   );
@@ -235,6 +228,9 @@ function renderYarnList() {
     yarnListArea.appendChild(pill);
   });
 }
+
+// 一覧を描画
+function renderRecords() {
   if (!listArea) return;
 
   listArea.innerHTML = "";
@@ -245,6 +241,9 @@ function renderYarnList() {
     div.textContent =
       "まだ記録がありません。左のフォームから最初の作品を追加してみてね🧶";
     listArea.appendChild(div);
+    // フィルター＆毛糸一覧もリセット
+    updateFilterOptions();
+    renderYarnList();
     return;
   }
 
@@ -288,7 +287,7 @@ function renderYarnList() {
       card.appendChild(memo);
     }
 
-    // --- 編集・削除ボタン ---
+    // 編集・削除ボタン
     const actions = document.createElement("div");
     actions.className = "entry-actions";
 
@@ -309,52 +308,18 @@ function renderYarnList() {
     actions.appendChild(editBtn);
     actions.appendChild(deleteBtn);
     card.appendChild(actions);
-    // -------------------------
 
     listArea.appendChild(card);
   });
 
+  // フィルターと毛糸一覧を更新
   updateFilterOptions();
-
+  renderYarnList();
+}
 
 // フィルターセレクトの選択肢更新
 function updateFilterOptions() {
-}
-// 毛糸名の一覧を表示
-function renderYarnList() {
-  if (!yarnListArea) return;
-
-  yarnListArea.innerHTML = "";
-
-  if (!records.length) {
-    const div = document.createElement("div");
-    div.className = "empty-state";
-    div.textContent = "まだ毛糸の記録がありません🧶";
-    yarnListArea.appendChild(div);
-    return;
-  }
-
-  // ユニークな毛糸名を抽出
-  const yarnNames = Array.from(
-    new Set(records.map((r) => r.yarnName).filter(Boolean))
-  );
-
-  if (!yarnNames.length) {
-    const div = document.createElement("div");
-    div.className = "empty-state";
-    div.textContent = "毛糸名の入力された記録がまだありません🧶";
-    yarnListArea.appendChild(div);
-    return;
-  }
-
-  yarnNames.forEach((name) => {
-    const pill = document.createElement("div");
-    pill.className = "yarn-pill";
-    pill.textContent = name;
-    yarnListArea.appendChild(pill);
-  });
-}
-    if (!yarnFilterSelect || !itemFilterSelect) return;
+  if (!yarnFilterSelect || !itemFilterSelect) return;
 
   const yarnNames = Array.from(
     new Set(records.map((r) => r.yarnName).filter(Boolean))
@@ -381,7 +346,7 @@ function renderYarnList() {
   });
 }
 
-// 記録の編集開始（フォームに値を入れる）
+// 記録の編集開始
 function startEditRecord(id) {
   const target = records.find((r) => r.id === id);
   if (!target) return;
@@ -459,10 +424,8 @@ function handleSaveRecord() {
     };
 
     if (editingRecordId) {
-      // 上書き
       records = records.map((r) => (r.id === editingRecordId ? record : r));
     } else {
-      // 新規追加（先頭に）
       records.unshift(record);
     }
 
@@ -479,7 +442,6 @@ function handleSaveRecord() {
     };
     reader.readAsDataURL(file);
   } else {
-    // 写真なしで保存
     applyAndSave(
       editingRecordId
         ? records.find((r) => r.id === editingRecordId)?.photoDataUrl || null
@@ -508,7 +470,7 @@ function resetForm() {
 // =============================
 
 function init() {
-  // 認証ボタン
+  // --- 認証ボタン ---
   if (googleSignInBtn) {
     googleSignInBtn.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -520,7 +482,7 @@ function init() {
         alert("Google ログインに失敗しました：\n" + (err.message || err.code));
       }
     });
-
+  }
 
   if (emailSignInBtn) {
     emailSignInBtn.addEventListener("click", async (e) => {
@@ -583,27 +545,28 @@ function init() {
         alert("ログアウトに失敗しました：\n" + (err.message || err.code));
       }
     });
-    // ===============================
-// ゲストとして使ってみる（B案：ローカル専用モード）
-// ===============================
-if (guestBtn) {
-  guestBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    // ログイン画面を隠してアプリ画面を表示
-    if (authView) authView.style.display = "none";
-    if (appView)  appView.style.display  = "block";
-
-    // 表示名をゲストに
-    if (ownerNameEl)       ownerNameEl.textContent       = "ゲストさん";
-    if (userDisplayNameEl) userDisplayNameEl.textContent = "ゲストさん（ローカル保存）";
-
-    // ゲストモードは Firebase 認証を使わない
-    console.log("ゲストモードで利用開始（ローカル保存のみ）");
-  });
-}
   }
 
+  // --- ゲストとして使ってみる（B案：ローカル専用モード） ---
+  if (guestBtn) {
+    guestBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      if (authView) authView.style.display = "none";
+      if (appView) appView.style.display = "block";
+
+      if (ownerNameEl) ownerNameEl.textContent = "ゲストさん";
+      if (userDisplayNameEl) userDisplayNameEl.textContent = "ゲストさん（ローカル保存）";
+
+      console.log("ゲストモードで利用開始（ローカル保存のみ）");
+
+      // データ表示
+      loadRecords();
+      renderRecords();
+    });
+  }
+
+  // プロフィール保存
   if (profileSaveBtn) {
     profileSaveBtn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -633,8 +596,6 @@ if (guestBtn) {
   if (itemFilterSelect) {
     itemFilterSelect.addEventListener("change", renderRecords);
   }
-    renderYarnList();
-}
 }
 
 document.addEventListener("DOMContentLoaded", init);
