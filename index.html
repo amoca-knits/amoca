@@ -706,22 +706,29 @@
   margin-top: 12px;
 }
 
-/* 毛糸のリスト */
-.yarn-list {
+/* 毛糸一覧（丸いタグ） --------------------------- */
+#yarnListArea {
+  position: static;
+  width: auto;
+  height: auto;
+  background: none;
+
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 4px;
-  font-size: 0.8rem;
+  gap: 8px;
+  padding: 4px 0;
+  margin-top: 12px;
 }
 
-/* 毛糸名のタグっぽい見た目 */
 .yarn-pill {
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  margin: 4px 4px 0 0;
   border-radius: 999px;
-  background: #fff;
-  border: 1px solid rgba(180, 140, 227, 0.4);
-  color: #5b3f91;
+  background: #f5e9ff;
+  font-size: 12px;
+  color: #444;
   white-space: nowrap;
 }
 }  </style>
