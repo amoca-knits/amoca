@@ -574,56 +574,56 @@
       font-size: 0.72rem;
       color: var(--text-muted);
     }
-    /* ================================
-   記録カード：写真サイズ調整
+/* ================================
+   記録カード：写真サイズ調整 ＋ ログイン後レイアウト
 ================================ */
+
+/* 記録カード本体 */
+.entry-card {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto 16px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #ffffffcc;
+}
+
+/* 記録カードの写真 */
 .entry-photo {
   width: 100%;
-  max-width: 100%;
+  max-width: 300px;
   height: auto;
-  border-radius: 12px;
+  border-radius: 10px;
+  display: block;
+  margin: 10px auto 4px;
   object-fit: cover;
 }
 
-/* カード本体の横幅をスマホで見やすく */
-.entry-card {
-  max-width: 640px;
-  margin: 16px auto;
-  background: #fff;
-  border-radius: 16px;
-  padding: 16px;
-}
-
-/* ================================
-   編集・削除ボタン
-================================ */
+/* 編集・削除ボタン */
 .entry-actions {
-  margin-top: 12px;
+  margin-top: 8px;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 }
 
 .btn.btn-sm {
   font-size: 12px;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
-}
-
-/* 削除ボタン（アウトライン） */
-.btn.btn-outline {
-  border: 1px solid #aaa;
-  background: transparent;
-}
-
-/* 編集ボタン（紫） */
-.btn.btn-sm {
   background: #cda7ff;
   color: #fff;
 }
-/* === ログイン後画面 === */
+
+.btn.btn-outline {
+  border: 1px solid #aaa;
+  background: transparent;
+  color: inherit;
+}
+
+/* === ログイン後画面全体 === */
 
 .app-card {
   max-width: 1100px;
@@ -666,30 +666,8 @@
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
   gap: 16px;
 }
-.entry-photo {
-  width: 100%;
-  max-width: 300px;
-  height: auto;
-  border-radius: 8px;
-  display: block;
-  margin: 12px auto;
-}
-.entry-card {
-  width: 100%;
-  max-width: 480px;
-  margin: 0 auto 20px;
-  padding: 16px;
-  border-radius: 12px;
-  background: #ffffffcc;
-}
-@media (max-width: 780px) {
-  .app-card {
-    padding: 16px 14px 22px;
-  }
-  .app-layout {
-    grid-template-columns: 1fr;
-  }
-  /* ゲストログインボタン */
+
+/* ゲストログインボタン */
 .auth-guest-btn {
   margin-top: 8px;
   width: 100%;
@@ -701,18 +679,18 @@
 .auth-guest-btn:hover {
   background: #f7f0ff;
 }
-/* 毛糸一覧カード */
+
+/* 毛糸一覧カード（テーブル版の外枠用） */
 .yarn-card {
   margin-top: 12px;
 }
 
-/* 毛糸一覧（丸いタグ） --------------------------- */
+/* （将来的に使うかもだけど一応残しておく）毛糸タグスタイル */
 #yarnListArea {
   position: static;
   width: auto;
   height: auto;
   background: none;
-
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -731,7 +709,16 @@
   color: #444;
   white-space: nowrap;
 }
-}  </style>
+
+/* スマホ向けレイアウト調整 */
+@media (max-width: 780px) {
+  .app-card {
+    padding: 16px 14px 22px;
+  }
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+}</style>
 </head>
 <body>
   <div class="app">
